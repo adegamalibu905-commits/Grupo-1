@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Entrar no grupo</title>
+<style>
+  :root {
+    --bg: #eef2f6;
+    --card: #ffffff;
+    --text: #17212b;
+    --muted: #6b7a8a;
+    --line: #dde4ec;
+    --accent: #1f8ad2; /* a cor do botão é trocada pela configuração */
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1621;
+      --card: #17212b;
+      --text: #f2f5f8;
+      --muted: #8a9aab;
+      --line: #263444;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
+  }
+  .card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 32px 24px 24px;
+    text-align: center;
+  }
+  .avatar {
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    margin: 0 auto 18px;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: 600;
+    overflow: hidden;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  h1 { font-size: 22px; line-height: 1.25; margin: 0 0 6px; font-weight: 650; }
+  .members { color: var(--muted); font-size: 15px; margin: 0 0 16px; }
+  .desc {
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0 auto 24px;
+    max-width: 34ch;
+    white-space: pre-line;
+  }
+  .join {
+    display: block;
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 14px 16px;
+    border-radius: 12px;
+    transition: filter .15s ease;
+  }
+  .join:hover { filter: brightness(1.08); }
+  .join:active { filter: brightness(.94); }
+  .join:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
+  .hint { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+  .legal { color: var(--muted); font-size: 12px; line-height: 1.4; margin: 18px 0 0; }
+  .legal a { color: var(--muted); }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { .join { transition: none; } }
+</style>
+</head>
+<body>
+
+<main class="card">
+  <div class="avatar" id="avatar" aria-hidden="true"></div>
+  <h1 id="nome"></h1>
+  <p class="members" id="membros"></p>
+  <p class="desc" id="descricao"></p>
+  <a class="join" id="botao" href="#" rel="noopener"></a>
+  <p class="hint" id="dica"></p>
+  <p class="legal" id="legal" hidden></p>
+</main>
+
+<script>
+/* ==========================================================================
+   CONFIGURAÇÃO - mexa só aqui. Salve o arquivo e publique de novo.
+   ========================================================================== */
+const CONFIG = {
+  // ID do seu Pixel da Meta (só números). Deixe "" para não carregar o Pixel.
+  pixelId: "",
+
+  // Evento enviado quando a pessoa toca no botão. Padrão: Lead.
+  eventoAoClicar: "Lead",
+
+  // Dados que aparecem no cartão
+  nomeDoGrupo: "🔥🔞 SALA OCULTA PREVIΛS 🔞🔥",
+  membros: "4.397 assinantes",
+  descricao: "Acesso exclusivo a conteúdo adulto 🔥\nPrévias e novidades toda semana 💋\nSó para maiores de 18 anos 🔞",
+
+  // Foto do grupo: nome do arquivo enviado junto com esta página (ex.: "foto.jpg").
+  // Se ficar vazio ou o arquivo não existir, aparece a inicial do nome.
+  foto: "foto.jpg",
+
+  // Link de convite do grupo no Telegram
+  linkDoGrupo: "https://t.me/+SEU_CONVITE",
+
+  // Textos do botão
+  textoDoBotao: "Entrar no grupo",
+  textoAbaixoDoBotao: "Abre no aplicativo do Telegram",
+
+  // Cor do botão (qualquer cor em hexadecimal)
+  corDoBotao: "#1f8ad2",
+
+  // Aviso curto no rodapé (ex.: "Conteúdo para maiores de 18 anos."). Vazio = não mostra.
+  avisoLegal: "",
+
+  // Endereço da sua política de privacidade. Vazio = não mostra o link.
+  linkPrivacidade: ""
+};
+/* ========================================================================== */
+
+(function () {
+  var C = CONFIG;
+
+  // ---- Preenche a página ----
+  document.title = C.nomeDoGrupo;
+  document.documentElement.style.setProperty("--accent", C.corDoBotao);
+  document.getElementById("nome").textContent = C.nomeDoGrupo;
+  document.getElementById("membros").textContent = C.membros;
+  document.getElementById("descricao").textContent = C.descricao;
+  document.getElementById("dica").textContent = C.textoAbaixoDoBotao;
+
+  var botao = document.getElementById("botao");
+  botao.textContent = C.textoDoBotao;
+  botao.href = C.linkDoGrupo;
+
+  var avatar = document.getElementById("avatar");
+  function mostrarInicial() {
+    var m = (C.nomeDoGrupo || "").match(/\p{L}/u);
+    avatar.textContent = m ? m[0].toUpperCase() : "?";
+  }
+  if (C.foto) {
+    var img = new Image();
+    img.alt = "";
+    img.onload = function () { avatar.textContent = ""; avatar.appendChild(img); };
+    img.onerror = mostrarInicial;
+    img.src = C.foto;
+  } else {
+    mostrarInicial();
+  }
+
+  if (C.avisoLegal || C.linkPrivacidade) {
+    var legal = document.getElementById("legal");
+    legal.hidden = false;
+    if (C.avisoLegal) legal.appendChild(document.createTextNode(C.avisoLegal + " "));
+    if (C.linkPrivacidade) {
+      var a = document.createElement("a");
+      a.href = C.linkPrivacidade;
+      a.textContent = "Política de privacidade";
+      legal.appendChild(a);
+    }
+  }
+
+  // ---- Pixel da Meta (só carrega se houver ID) ----
+  var pixelAtivo = /^\d{6,}$/.test(String(C.pixelId || "").trim());
+  if (pixelAtivo) {
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', String(C.pixelId).trim());
+    fbq('track', 'PageView');
+  }
+
+  // ---- Clique no botão: envia o evento e abre o Telegram ----
+  var jaEnviado = false;
+  botao.addEventListener("click", function (e) {
+    if (!pixelAtivo || jaEnviado) return;       // sem Pixel, o link funciona normalmente
+    e.preventDefault();
+    jaEnviado = true;
+    try { fbq('track', C.eventoAoClicar || 'Lead'); } catch (err) {}
+    setTimeout(function () { window.location.href = C.linkDoGrupo; }, 300);
+  });
+})();
+</script>
+
+<noscript>
+  <p style="text-align:center;font-family:sans-serif">
+    Ative o JavaScript para ver esta página.
+  </p>
+</noscript>
+
+</body>
+</html>
