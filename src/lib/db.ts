@@ -2,19 +2,25 @@ const url = process.env.SUPABASE_URL;
 const anon = process.env.SUPABASE_ANON_KEY;
 const secret = process.env.MENTORIA_DB_SECRET;
 
+// Nunca derruba o pagamento: se o banco falhar, apenas registra o erro no log.
 async function rpc(fn: string, args: Record<string, unknown>) {
   if (!url || !anon || !secret) {
     console.error("supabase: variáveis ausentes (SUPABASE_URL, SUPABASE_ANON_KEY, MENTORIA_DB_SECRET)");
     return null;
   }
-  const res = await fetch(`${url}/rest/v1/rpc/${fn}`, {
-    method: "POST",
-    cache: "no-store",
-    headers: { apikey: anon, Authorization: `Bearer ${anon}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ p_secret: secret, ...args }),
-  });
-  if (!res.ok) console.error("supabase rpc", fn, res.status, await res.text());
-  return res;
+  try {
+    const res = await fetch(`${url}/rest/v1/rpc/${fn}`, {
+      method: "POST",
+      cache: "no-store",
+      headers: { apikey: anon, Authorization: `Bearer ${anon}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_secret: secret, ...args }),
+    });
+    if (!res.ok) console.error("supabase rpc", fn, res.status, await res.text());
+    return res;
+  } catch (e) {
+    console.error("supabase rpc falhou", fn, e);
+    return null;
+  }
 }
 
 type OrderInput = {
