@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { PLANS, TRACKS, SITE, siteUrl } from "@/config/site";
+import { siteUrl } from "@/config/site";
+import { getContent } from "@/lib/content";
 import { createDeposit } from "@/lib/gladepay";
 import { insertOrder, updateByReference } from "@/lib/db";
 import { isCpf, isEmail, isName, isPhone, onlyDigits } from "@/lib/validate";
@@ -12,9 +13,11 @@ export async function POST(req: Request) {
   let b: Record<string, string>;
   try { b = await req.json(); } catch { return bad("Requisição inválida"); }
 
-  const plan = PLANS.find((p) => p.id === b.plan);
-  const track = TRACKS.find((t) => t.id === b.track);
+  const c = await getContent();
+  const track = c.plans.tracks.find((t) => t.id === b.track);
+  const plan = track?.plans.find((p) => p.id === b.plan);
   if (!plan || !track) return bad("Plano inválido");
+  const cents = Math.round(plan.price * 100);
   if (!isName(b.name || "")) return bad("Nome é obrigatório");
   if (!isEmail(b.email || "")) return bad("Email inválido");
   if (!isCpf(b.cpf || "")) return bad("CPF inválido");
@@ -25,17 +28,17 @@ export async function POST(req: Request) {
   const email = b.email.trim().toLowerCase();
 
   await insertOrder({
-    reference, track: track.id, plan_id: plan.id, amount_cents: plan.priceCents, status: "CREATED",
+    reference, track: track.id, plan_id: plan.id, amount_cents: cents, status: "CREATED",
     customer_name: name, customer_email: email, customer_cpf: onlyDigits(b.cpf), customer_phone: onlyDigits(b.phone),
   });
 
   try {
     const dep = await createDeposit({
-      amountCents: plan.priceCents,
+      amountCents: cents,
       reference,
       callbackUrl: `${siteUrl()}/api/webhooks/gladepay`,
       redirectUrl: `${siteUrl()}/obrigado`,
-      description: `${SITE.brand} - ${track.label} - ${plan.name}`,
+      description: `${c.settings.brand} - ${track.label} - ${plan.name}`,
       customerName: name,
       customerEmail: email,
       expiresInSeconds: 1800,
