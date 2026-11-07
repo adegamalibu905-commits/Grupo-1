@@ -56,9 +56,9 @@ export async function POST(req: Request) {
       qrCodeUrl: dep.qrCodeUrl,
       checkoutUrl: dep.checkoutUrl,
     });
-  } catch (e) {
+   } catch (e) {
     await updateByReference(reference, { status: "FAILED" });
     console.error("gladepay", e);
-    return bad("Não foi possível gerar o Pix agora. Tente novamente.", 502);
+    const detail = e instanceof Error ? e.message : "";
+    return bad(`Não foi possível gerar o Pix agora${detail ? ` (${detail})` : ""}. Tente novamente.`, 502);
   }
-}
