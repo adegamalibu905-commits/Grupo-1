@@ -5,7 +5,7 @@ import { getContent } from "@/lib/content";
 import { createDeposit } from "@/lib/gladepay";
 import { insertOrder, updateByReference } from "@/lib/db";
 import { isCpf, isEmail, isName, isPhone, onlyDigits } from "@/lib/validate";
-import { applyDiscount, findCoupon } from "@/lib/coupons";
+import { PIX_LIMIT_CENTS, computePrice, findCoupon } from "@/lib/coupons";
 
 export const runtime = "nodejs";
 const bad = (error: string, status = 400) => NextResponse.json({ error }, { status });
@@ -21,7 +21,8 @@ export async function POST(req: Request) {
   const coupon = b.coupon ? findCoupon(b.coupon) : null;
   if (b.coupon && !coupon) return bad("Cupom inválido ou expirado");
   const baseCents = Math.round(plan.price * 100);
-  const cents = coupon ? applyDiscount(baseCents, coupon.percent) : baseCents;
+  const cents = computePrice(baseCents, coupon).totalCents;
+  if (cents > PIX_LIMIT_CENTS) return bad("Este plano passa do limite de R$ 500 do Pix. Ajuste o valor do plano no painel.");
   if (!isName(b.name || "")) return bad("Nome é obrigatório");
   if (!isEmail(b.email || "")) return bad("Email inválido");
   if (!isCpf(b.cpf || "")) return bad("CPF inválido");
@@ -56,9 +57,10 @@ export async function POST(req: Request) {
       qrCodeUrl: dep.qrCodeUrl,
       checkoutUrl: dep.checkoutUrl,
     });
-   } catch (e) {
+  } catch (e) {
     await updateByReference(reference, { status: "FAILED" });
     console.error("gladepay", e);
     const detail = e instanceof Error ? e.message : "";
     return bad(`Não foi possível gerar o Pix agora${detail ? ` (${detail})` : ""}. Tente novamente.`, 502);
   }
+}
