@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import QRCode from "qrcode";
 import { randomUUID } from "crypto";
 import { siteUrl } from "@/config/site";
 import { getContent } from "@/lib/content";
@@ -49,11 +50,16 @@ export async function POST(req: Request) {
       expiresInSeconds: 1800,
     });
     await updateByReference(reference, { public_id: dep.publicId });
+    // Se a GladePay não mandar a imagem do QR, geramos aqui a partir do código copia e cola.
+    let qrCodeBase64 = dep.qrCodeBase64;
+    if (!qrCodeBase64) {
+      try { qrCodeBase64 = await QRCode.toDataURL(dep.qrCodeText, { margin: 1, width: 360 }); } catch (e) { console.error("qr", e); }
+    }
     return NextResponse.json({
       publicId: dep.publicId,
       expiresAt: dep.expiresAt,
       qrCodeText: dep.qrCodeText,
-      qrCodeBase64: dep.qrCodeBase64,
+      qrCodeBase64,
       qrCodeUrl: dep.qrCodeUrl,
       checkoutUrl: dep.checkoutUrl,
     });
