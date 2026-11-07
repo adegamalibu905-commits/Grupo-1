@@ -117,6 +117,7 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Erro ao gerar o Pix");
+      if (!d.qrCodeText) throw new Error("Não foi possível gerar o código Pix agora. Tente novamente em instantes.");
       const apiLeft = Math.floor((new Date(d.expiresAt).getTime() - Date.now()) / 1000);
       const secs = Number.isFinite(apiLeft) && apiLeft > 0 && apiLeft <= PIX_TTL ? apiLeft : PIX_TTL;
       setDeadline(Date.now() + secs * 1000); setLeft(secs);
@@ -257,17 +258,12 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
             </div>
 
             {left > 0 ? (<>
-              {pix.qrCodeText ? (<>
-                <p className="px-h">Escaneie o QR Code com o app do seu banco</p>
-                {qrSrc ? <img className="px-qr" src={qrSrc} alt="QR Code Pix" /> : <div className="px-qr px-skel" />}
+              <p className="px-h">Escaneie o QR Code com o app do seu banco</p>
+              {qrSrc ? <img className="px-qr" src={qrSrc} alt="QR Code Pix" /> : <div className="px-qr px-skel" />}
 
-                <p className="px-h">Ou use o Pix Copia e Cola</p>
-                <div className="px-code" onClick={(e) => { const sel = window.getSelection(); if (sel) { const r = document.createRange(); r.selectNodeContents(e.currentTarget); sel.removeAllRanges(); sel.addRange(r); } }}>{pix.qrCodeText}</div>
-                <button type="button" className="px-copy" onClick={copy}>{copied ? "Código copiado ✓" : "Copiar código Pix"}</button>
-              </>) : (<>
-                <p className="px-h">Toque no botão abaixo para abrir a página segura de pagamento e finalizar com Pix.</p>
-                {pix.checkoutUrl && <a className="px-copy" href={pix.checkoutUrl} target="_blank" rel="noopener noreferrer">Ir para o pagamento Pix</a>}
-              </>)}
+              <p className="px-h">Ou use o Pix Copia e Cola</p>
+              <div className="px-code" onClick={(e) => { const sel = window.getSelection(); if (sel) { const r = document.createRange(); r.selectNodeContents(e.currentTarget); sel.removeAllRanges(); sel.addRange(r); } }}>{pix.qrCodeText}</div>
+              <button type="button" className="px-copy" onClick={copy}>{copied ? "Código copiado ✓" : "Copiar código Pix"}</button>
 
               <div className="px-info">
                 <div><span>Produto</span><b>{productShort}</b></div>
