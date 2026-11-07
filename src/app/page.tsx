@@ -6,6 +6,8 @@ import Motion from "@/components/Motion";
 import CountUp from "@/components/CountUp";
 import VideoBox from "@/components/VideoBox";
 import WhatsAppWidget from "@/components/WhatsAppWidget";
+import Rich from "@/components/Rich";
+import "@/components/sections.css";
 
 export const dynamic = "force-dynamic";
 const st = (i: number) => ({ "--i": i } as React.CSSProperties);
@@ -52,12 +54,7 @@ export default async function Home() {
           <h2 className="h2">{c.plans.titleStart} <span className="gold">{c.plans.titleAccent}</span> {c.plans.titleEnd}</h2>
           <p className="muted narrow">{c.plans.text}</p>
         </Reveal>
-        <Plans data={c.plans} />
-        <Reveal>
-          <p className="over" style={{ marginTop: 44 }}>{c.plans.receivesTitle}</p>
-          <div className="chips">{c.plans.receives.map((r, i) => <span className="chip st" style={st(i)} key={i}>{r}</span>)}</div>
-          <p className="muted" style={{ marginTop: 18, fontSize: 12 }}>{c.plans.payNote}</p>
-        </Reveal>
+        <Plans data={c.plans} career={c.career} />
       </div></section>
     ),
     renew: () => (
@@ -69,10 +66,16 @@ export default async function Home() {
       </div></div></section></Reveal>
     ),
     what: () => (
-      <Reveal><section className="sec"><div className="wrap">
-        <h2 className="h2 center">{c.what.title}</h2>
-        <div className="cards" style={{ marginTop: 28 }}>{c.what.items.map((w, i) => (
-          <div className="card st" style={st(i)} key={i}><div className="av" aria-hidden>{w.icon}</div><h3>{w.t}</h3><p className="muted">{w.d}</p></div>
+      <Reveal><section className="sec center whatsec"><div className="wrap">
+        <h2 className="h2">{c.what.title}</h2>
+        <div className="wrule" />
+        {c.what.intro && <p className="wintro"><Rich text={c.what.intro} /></p>}
+        {c.what.highlight && <p className="whigh">{c.what.highlight}</p>}
+        <div className="wcards">{c.what.items.map((w, i) => (
+          <div className="wcard st" style={st(i)} key={i}>
+            <div className="wav" aria-hidden>{w.image ? <img src={w.image} alt="" /> : w.icon}</div>
+            <h3>{w.t}</h3><p><Rich text={w.d} /></p>
+          </div>
         ))}</div>
       </div></section></Reveal>
     ),
@@ -90,13 +93,17 @@ export default async function Home() {
       </div></section></Reveal>
     ),
     results: () => {
-      const n = Math.max(12, c.results.images.length);
+      const n = Math.max(24, Math.ceil(c.results.images.length / 4) * 4);
       return (
-        <Reveal><section className="sec center"><div className="wrap">
-          <h2 className="h2">{c.results.title}</h2>
-          <p className="muted">{c.results.subtitle}</p>
-          <div className="mosaic">{Array.from({ length: n }, (_, i) => <div className="st" style={st(i % 6)} key={i}>{c.results.images[i] && <img loading="lazy" src={c.results.images[i]} alt="Aluno aprovado" />}</div>)}</div>
-        </div></section></Reveal>
+        <section className="gallery">
+          {(c.results.title || c.results.subtitle) && (
+            <div className="gallery-head">
+              {c.results.title && <h2 className="h2">{c.results.title}</h2>}
+              {c.results.subtitle && <p className="muted">{c.results.subtitle}</p>}
+            </div>
+          )}
+          <div className="gal">{Array.from({ length: n }, (_, i) => <div key={i}>{c.results.images[i] && <img loading="lazy" src={c.results.images[i]} alt="Aluno aprovado" />}</div>)}</div>
+        </section>
       );
     },
     testimonials: () => (
