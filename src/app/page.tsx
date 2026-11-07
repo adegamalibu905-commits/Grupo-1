@@ -24,7 +24,6 @@ export default async function Home() {
   const R: Record<string, () => ReactNode> = {
     hero: () => (
       <section className="sec center hero"><div className="wrap">
-        {s.logo && <img className="logo" src={s.logo} alt={s.brand} />}
         <Reveal>
           <p className="over st" style={st(0)}>{c.hero.overline}</p>
           <h1 className="h1 st" style={st(1)}>{c.hero.titleStart} <span className="shine-t">{c.hero.titleGold}</span></h1>
