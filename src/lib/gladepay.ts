@@ -110,30 +110,29 @@ async function postDeposit(body: unknown, fallbackExpiresSec: number): Promise<G
   const raw = await glade<unknown>("/deposito", { method: "POST", body: JSON.stringify(body) });
   console.log("gladepay resposta", JSON.stringify(raw).slice(0, 2000));
   const dep = parseDeposit(raw, fallbackExpiresSec);
-  if (!dep) {
-    const keys = raw && typeof raw === "object" ? Object.keys(raw as object).join(", ") : typeof raw;
-    throw new GladeError(`resposta sem código Pix; campos recebidos: ${keys || "nenhum"}`, 502);
-  }
-  return dep;
+  if (dep) return dep;
+  const apiMsg = raw && typeof raw === "object" ? str((raw as Record<string, unknown>).error) ?? str((raw as Record<string, unknown>).message) : null;
+  if (apiMsg) throw new GladeError(apiMsg, 502);
+  const keys = raw && typeof raw === "object" ? Object.keys(raw as object).join(", ") : typeof raw;
+  throw new GladeError(`resposta sem código Pix; campos recebidos: ${keys || "nenhum"}`, 502);
 }
 
-// Pix: POST /v1/deposito. Tenta o corpo completo; se a API recusar campos extras (4xx),
+// Pix: POST /v1/deposito. Tenta o corpo completo; se falhar por qualquer motivo (exceto chave inválida),
 // repete só com os campos documentados (amountCents, reference, callbackUrl, customerEmail).
 export async function createDeposit(input: CreateDepositInput): Promise<GladeDeposit> {
   const ttl = input.expiresInSeconds ?? 1800;
   try {
     return await postDeposit(input, ttl);
   } catch (e) {
-    if (e instanceof GladeError && e.status >= 400 && e.status < 500 && e.status !== 401 && e.status !== 403) {
-      const minimal = {
-        amountCents: input.amountCents,
-        reference: input.reference,
-        callbackUrl: input.callbackUrl,
-        ...(input.customerEmail ? { customerEmail: input.customerEmail } : {}),
-      };
-      return postDeposit(minimal, ttl);
-    }
-    throw e;
+    if (e instanceof GladeError && (e.status === 401 || e.status === 403)) throw e;
+    console.error("gladepay corpo completo falhou, tentando o mínimo:", e instanceof Error ? e.message : e);
+    const minimal = {
+      amountCents: input.amountCents,
+      reference: input.reference,
+      callbackUrl: input.callbackUrl,
+      ...(input.customerEmail ? { customerEmail: input.customerEmail } : {}),
+    };
+    return postDeposit(minimal, ttl);
   }
 }
 
