@@ -28,7 +28,7 @@ export function normalize(saved: unknown): Content {
   const c = merge(DEFAULT_CONTENT, saved) as Content;
   const have = new Set(c.sections.map((s) => s.id));
   for (const s of DEFAULT_CONTENT.sections) if (!have.has(s.id)) c.sections.push({ ...s });
-  c.what.items = c.what.items.map((i) => ({ image: "", ...i }));
+  c.what.items = c.what.items.map((i) => ({ ...i, image: i.image || "" }));
   return c;
 }
 
