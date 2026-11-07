@@ -1,7 +1,15 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { brl } from "@/config/site";
 import { isCpf, isEmail, isName, isPhone, maskCpf, maskPhone } from "@/lib/validate";
+import "./checkout.css";
+
+// ====== EDITE AQUI ======
+const BRAND_TAG = "[Mentoria OBA]";                 // nome que aparece antes da carreira
+const THUMB = "/mentoria-oba.png";                  // imagem do topo (arquivo em public/)
+const SELLER = "PMMinas Negócios Digitais LTDA";    // texto "Curso ofertado por"
+// ========================
+
+const money = (c: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(c / 100);
 
 export type Selection = { track: string; plan: string; title: string; priceCents: number };
 type Pix = { publicId: string; expiresAt: string; qrCodeText: string; qrCodeBase64: string | null; qrCodeUrl: string | null; checkoutUrl: string };
@@ -11,7 +19,6 @@ type Applied = { code: string; percent: number; originalCents: number; discountC
 export default function CheckoutModal({ selection, onClose }: { selection: Selection; onClose: () => void }) {
   const [f, setF] = useState({ email: "", email2: "", name: "", cpf: "", phone: "" });
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [agree, setAgree] = useState(false);
   const [step, setStep] = useState<Step>("form");
   const [pix, setPix] = useState<Pix | null>(null);
   const [error, setError] = useState("");
@@ -22,7 +29,12 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
   const [couponMsg, setCouponMsg] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
   const [coupon, setCoupon] = useState<Applied | null>(null);
+
   const total = coupon ? coupon.totalCents : selection.priceCents;
+  const [trackLabel, planName = ""] = selection.title.split(" — ");
+  const months = planName.match(/\d+/)?.[0];
+  const productShort = `🎖️ ${BRAND_TAG} ${trackLabel.toUpperCase()}`;
+  const productFull = months ? `${productShort} - ${months} MESES` : productShort;
 
   async function applyCoupon() {
     const code = couponInput.trim();
@@ -50,7 +62,7 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
     cpf: isCpf(f.cpf) ? "" : "CPF inválido",
     phone: isPhone(f.phone) ? "" : "Telefone inválido",
   }), [f]);
-  const valid = Object.values(errs).every((e) => !e) && agree;
+  const valid = Object.values(errs).every((e) => !e);
   const set = (k: keyof typeof f, v: string) => setF((p) => ({ ...p, [k]: k === "cpf" ? maskCpf(v) : k === "phone" ? maskPhone(v) : v }));
   const blur = (k: string) => setTouched((t) => ({ ...t, [k]: true }));
 
@@ -110,56 +122,83 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
           <button onClick={onClose} aria-label="Fechar" style={{ border: 0, background: "none", fontSize: 24, cursor: "pointer" }}>×</button>
         </div>
 
-        <div className="pcard">
-          <div className="pthumb"><small>MENTORIA</small><b>{selection.title.split(" — ")[0]}</b></div>
-          <div className="pinfo">
-            <h4>{selection.title}</h4>
-            <div className="pprice">{brl(total)}<small> à vista no Pix</small></div>
-            {coupon && <div className="pold">de {brl(coupon.originalCents)}</div>}
+        {/* TOPO (igual à 2ª imagem) */}
+        <div className="ck-top">
+          <img className="ck-thumb" src={THUMB} alt={productFull} />
+          <div className="ck-info">
+            <h4>{productFull}</h4>
+            <p className="ck-course">Curso: {productShort}</p>
+            <div className="ck-small">à vista no Pix</div>
+            <div className="ck-price">{money(total)}</div>
+            {coupon && <div className="ck-old">de {money(coupon.originalCents)}</div>}
+            <p className="ck-access">{planName}</p>
           </div>
         </div>
+        <hr className="ck-line" />
 
         {(step === "form" || step === "loading") && (<>
           {error && <div className="err-box">{error}</div>}
-          <div className="cupom">
-            <button type="button" className="cupom-head" onClick={() => setCouponOpen((o) => !o)} aria-expanded={couponOpen}>
-              <span>🎟️ Tem um cupom de desconto?</span><span className={`chev ${couponOpen ? "up" : ""}`}>⌄</span>
+
+          {/* CUPOM (logo abaixo do preço) */}
+          <div className="ck-cupom">
+            <button type="button" className="ck-cupom-head" onClick={() => setCouponOpen((o) => !o)} aria-expanded={couponOpen}>
+              <span>🎟️ Tem um cupom de desconto?</span><span className={`ck-chev ${couponOpen ? "up" : ""}`}>⌄</span>
             </button>
             {couponOpen && (
-              <div className="cupom-body">
+              <div className="ck-cupom-body">
                 {coupon ? (
-                  <div className="cupom-ok">
+                  <div className="ck-cupom-ok">
                     <span>Cupom <b>{coupon.code}</b> aplicado: {coupon.percent}% de desconto</span>
                     <button type="button" onClick={removeCoupon}>Remover</button>
                   </div>
                 ) : (
-                  <div className="cupom-row">
+                  <div className="ck-cupom-row">
                     <input value={couponInput} placeholder="Digite seu Cupom" autoCapitalize="characters" autoComplete="off"
                       onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                       onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyCoupon(); } }} />
                     <button type="button" disabled={couponLoading} onClick={applyCoupon}>{couponLoading ? "..." : "inserir ✓"}</button>
                   </div>
                 )}
-                {couponMsg && <div className="cupom-err">{couponMsg}</div>}
+                {couponMsg && <div className="ck-cupom-err">{couponMsg}</div>}
               </div>
             )}
           </div>
+
           {field("email", "Email", "aluno@email.com.br", "email", "email")}
           {field("email2", "Confirme seu e-mail", "aluno@email.com.br", "email", "email")}
           {field("name", "Nome Completo", "Seu nome completo")}
           {field("cpf", "CPF", "___.___.___-__", "text", "numeric")}
           {field("phone", "Celular", "Informe seu celular", "tel", "numeric")}
           <div className="method"><div>Pix</div></div>
-          <div className="info"><b>Transação segura e confirmada na hora.</b><br />Você receberá o QR Code e o código copia e cola. O acesso é liberado assim que o pagamento é confirmado.</div>
-          <div className="dcompra">
-            <h5>Detalhes da Compra</h5>
-            <div className="drow"><span>{selection.title}</span><span>{brl(selection.priceCents)}</span></div>
-            {coupon && <div className="drow desc"><span>Cupom {coupon.code} (−{coupon.percent}%)</span><span>− {brl(coupon.discountCents)}</span></div>}
-            <div className="dtotal"><span>Total</span><b>{brl(total)}</b></div>
+
+          {/* BLOCO IGUAL À 1ª IMAGEM */}
+          <div className="ck-box">
+            <h5>
+              <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="13" fill="#6366f1" /><path d="M13 6.5V13l4 2.5" stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              Transação segura e confirmada na hora
+            </h5>
+            <p>O pagamento com Pix leva poucos segundos usando a tecnologia do Banco Central para garantir a proteção dos seus dados em uma transação segura. Copie o código ou leia o QR Code para pagar</p>
           </div>
-          <label className="terms"><input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} /> Li e concordo com os termos de compra.</label>
-          <button className="btn btn-pay" disabled={!valid || step === "loading"} onClick={submit}>{step === "loading" ? "Gerando Pix…" : "Finalizar Pedido ✓"}</button>
-          {step === "loading" && <div className="skel" style={{ height: 14, marginTop: 14 }} />}
+
+          <div className="ck-det">
+            <h5>Detalhes da Compra</h5>
+            <div className="ck-row"><span>{productShort}</span><b>{money(selection.priceCents)}</b></div>
+            {coupon && <div className="ck-row desc"><span>Cupom {coupon.code} (−{coupon.percent}%)</span><b>− {money(coupon.discountCents)}</b></div>}
+            <div className="ck-total"><span>Total</span><b>{money(total)}</b></div>
+          </div>
+
+          <button className="ck-fin" disabled={!valid || step === "loading"} onClick={submit}>Finalizar Pedido ✓</button>
+          {step === "loading" && <div className="ck-wait"><span className="ck-spin" />Aguardando validação do seu dispositivo...</div>}
+
+          <div className="ck-secure">
+            <svg width="30" height="32" viewBox="0 0 30 32" aria-hidden="true"><rect x="2" y="13" width="26" height="18" rx="4" fill="#6b7280" /><path d="M8 13V9a7 7 0 0 1 14 0v4" stroke="#6b7280" strokeWidth="3.5" fill="none" /><circle cx="15" cy="22" r="2.4" fill="#fff" /></svg>
+            <span>Ambiente totalmente <b>seguro</b> e <b>protegido</b> contra fraudes.</span>
+          </div>
+
+          <div className="ck-legal">
+            Curso ofertado por: {SELLER}<br />
+            Ao clicar em <b>Finalizar Pedido</b>, eu concordo (i) que estou de acordo com os <b>Termos de Compra</b>; (ii) que li e estou ciente da <b>Política de Privacidade</b>; (iii) que concordo com os <b>Termos de Uso</b>; e (iv) que sou maior de idade ou autorizado e acompanhado por um tutor legal.
+          </div>
         </>)}
 
         {step === "pix" && pix && (<div className="center">
