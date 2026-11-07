@@ -1,83 +1,133 @@
-export const SITE = {
-  brand: "Mentoria",
-  overline: "MENTORIA • PMMG • SOLDADO E CADETE",
-  titleStart: "A MENTORIA QUE MAIS APROVA",
-  titleGold: "NA PMMG.",
-  subtitle: "Você não precisa estudar tudo. Precisa estudar o que realmente aproxima você da farda.",
-  support: "Plataforma, material, cronograma e acompanhamento construídos especificamente para Soldado e Cadete da PMMG.",
-  whatsapp: "5500000000000",
-  whatsappText: "Olá! Tenho uma dúvida sobre a mentoria.",
-  proof: "Atestado por 2.000+ alunos aprovados",
-  guarantee: "7 dias de garantia legal",
+const mkPlans = () => [
+  { id: "3m", name: "3 meses de acesso", label: "PLANO CURTO", price: 567, oldPrice: 0, featured: false,
+    features: ["Acesso integral à plataforma durante os 3 meses", "Mesmo conteúdo e materiais dos planos mais longos"] },
+  { id: "6m", name: "6 meses de acesso", label: "PLANO INTERMEDIÁRIO", price: 947, oldPrice: 0, featured: false,
+    features: ["17% menor por mês em relação ao plano de 3 meses", "6 meses completos de acesso à plataforma e aos materiais"] },
+  { id: "12m", name: "12 meses de acesso", label: "MELHOR CUSTO-BENEFÍCIO", price: 1422, oldPrice: 0, featured: true,
+    features: ["Até 15 redações corrigidas", "46% menor por mês em relação ao plano de 3 meses", "12 meses de acesso à plataforma e aos materiais"] },
+];
+
+export const DEFAULT_CONTENT = {
+  settings: {
+    brand: "Mentoria", logo: "/foto.jpg",
+    metaTitle: "Mentoria PMMG | Soldado e Cadete",
+    metaDescription: "A mentoria que mais aprova na PMMG. Pagamento por Pix com confirmação automática.",
+    whatsapp: "5500000000000", whatsappText: "Olá! Tenho uma dúvida sobre a mentoria.",
+    waLabel: "ATENDIMENTO", waTitle: "Fale com nossa equipe", waText: "Tire suas dúvidas pelo WhatsApp", waCta: "Iniciar conversa →",
+    proof: "Atestado por 2.000+ alunos aprovados", guarantee: "7 dias de garantia legal",
+    footerText: "Todos os direitos reservados.", footerSub: "Pagamentos processados por Pix.",
+  },
+  theme: {
+    bg: "#050505", card: "#121210", line: "#2a2518", text: "#f4f1ea", muted: "#a39d8f",
+    gold: "#c8a86a", goldLight: "#e2cb97", goldDark: "#9c7f47",
+    blue: "#7fa6d1", blueLight: "#b9d3ee", blueDark: "#55799f",
+    band: "#0a0a8c", accent: "#ffe11a",
+  },
+  sections: [
+    { id: "hero", label: "Topo (título e números)", on: true },
+    { id: "video", label: "Vídeo + botões de carreira", on: true },
+    { id: "plans", label: "Planos e preços", on: true },
+    { id: "renew", label: "Renovação ex-alunos", on: true },
+    { id: "what", label: "O que é a Mentoria", on: true },
+    { id: "steps", label: "Como funciona", on: true },
+    { id: "forwho", label: "Para quem é", on: true },
+    { id: "results", label: "Galeria de aprovados", on: true },
+    { id: "testimonials", label: "Depoimentos", on: true },
+    { id: "mentor", label: "Quem é o mentor", on: true },
+    { id: "summary", label: "Resumindo + garantia", on: true },
+    { id: "benefits", label: "Por que vale a carreira", on: true },
+    { id: "banner", label: "Faixa de destaque", on: true },
+    { id: "faq", label: "Perguntas frequentes", on: true },
+    { id: "final", label: "Chamada final", on: true },
+  ],
+  hero: {
+    overline: "MENTORIA • PMMG • SOLDADO E CADETE",
+    titleStart: "A MENTORIA QUE MAIS APROVA", titleGold: "NA PMMG.",
+    subtitle: "Você não precisa estudar tudo. Precisa estudar o que realmente aproxima você da farda.",
+    support: "Plataforma, material, cronograma e acompanhamento construídos especificamente para Soldado e Cadete da PMMG.",
+    image: "",
+    stats: [{ n: "46", l: "1º lugar Soldado" }, { n: "5", l: "1º lugar Cadete" }, { n: "5.628", l: "alunos aprovados" }],
+  },
+  video: {
+    title: "VEJA A MENTORIA POR DENTRO", subtitle: "Conheça a plataforma, os materiais e a lógica de preparação.",
+    url: "", poster: "",
+    buttons: [{ text: "QUERO SER SOLDADO →", link: "#planos" }, { text: "QUERO SER CADETE →", link: "#planos" }],
+    note: "Soldado • Cadete • Turmas 2026/2027",
+    badges: ["Pix", "Compra 100% segura", "Privacidade protegida"],
+  },
+  plans: {
+    overline: "MATRÍCULAS ABERTAS", titleStart: "Escolha sua", titleAccent: "carreira", titleEnd: "e o tempo de acesso",
+    text: "Você recebe o mesmo conteúdo completo em qualquer plano. Escolha a carreira e por quanto tempo deseja ter acesso à preparação.",
+    priceNote: "à vista no Pix", cta: "Garantir minha vaga →", ribbon: "★ MAIS ESCOLHIDO",
+    tracks: [
+      { id: "soldado", label: "Soldado PMMG", sub: "2027", colorTheme: "gold", plans: mkPlans() },
+      { id: "cadete", label: "Cadete CFO", sub: "2027", colorTheme: "blue", plans: mkPlans() },
+    ],
+    receivesTitle: "TUDO O QUE VOCÊ RECEBE",
+    receives: ["Cronograma individualizado", "Apostilas em PDF", "Videoaulas", "Simulados", "Listas de questões", "Atualizações durante o ano", "Canal exclusivo de dúvidas", "Orientação para as etapas do certame"],
+    payNote: "Pix • Pagamento seguro • 7 dias de garantia legal • Sem renovação automática",
+  },
+  renew: { overline: "CONDIÇÃO EXCLUSIVA PARA EX-ALUNOS", title: "JÁ FOI ALUNO? RENOVE COM", titleGold: "DESCONTO.", button: "RENOVAR COM DESCONTO", link: "", note: "Atendimento pelo WhatsApp" },
+  what: {
+    title: "O que é a Mentoria?",
+    items: [
+      { icon: "★", t: "Conteúdo passo a passo", d: "Do iniciante ao avançado, em linguagem simples." },
+      { icon: "★", t: "Domine todas as etapas", d: "Prova objetiva, TAF, psicotécnico e exame médico." },
+      { icon: "★", t: "Cronograma individualizado", d: "Montado para o seu tempo disponível." },
+      { icon: "★", t: "Contato direto", d: "Canal exclusivo para tirar dúvidas." },
+      { icon: "★", t: "Atualizações gratuitas", d: "Todas as atualizações durante o seu acesso." },
+      { icon: "★", t: "Material completo", d: "Apostilas, videoaulas e tudo o que for necessário." },
+    ],
+  },
+  steps: {
+    title: "Como funciona", subtitle: "Do pagamento à aprovação, em quatro passos.",
+    items: [
+      { t: "Escolha sua carreira e plano", d: "Soldado ou Cadete, 3, 6 ou 12 meses de acesso." },
+      { t: "Pague no Pix", d: "QR Code ou copia e cola, com confirmação automática." },
+      { t: "Receba o acesso", d: "Liberado assim que o pagamento for confirmado." },
+      { t: "Estude com método", d: "Cronograma individual, materiais e canal de dúvidas." },
+    ],
+  },
+  forwho: {
+    title: "Para", titleGold: "QUEM", titleEnd: "é a Mentoria?",
+    items: ["Quem está começando agora e não faz ideia do conteúdo.", "Quem já está avançado e trava em poucas questões.", "Quem tem compromisso em fazer o básico que aprova.", "Quem entende que a cura está no campo de batalha diário.", "Quem não acredita em fórmula mágica e quer estudar com método."],
+  },
+  results: { title: "Resultados que falam por si", subtitle: "Alunos aprovados com a nossa metodologia.", images: [] as string[] },
+  testimonials: {
+    title: "Quem estudou, aprovou",
+    items: [
+      { name: "Nome do aluno", role: "1º lugar Soldado", text: "Edite este depoimento no painel administrativo.", image: "" },
+      { name: "Nome do aluno", role: "Aprovado Cadete", text: "Edite este depoimento no painel administrativo.", image: "" },
+      { name: "Nome do aluno", role: "Aprovado Soldado", text: "Edite este depoimento no painel administrativo.", image: "" },
+    ],
+  },
+  mentor: {
+    overline: "QUEM ESTÁ POR TRÁS", title: "Seu mentor", text: "Escreva aqui a história, a experiência e a credibilidade do mentor.", image: "",
+    bullets: ["Aprovado na PMMG", "Anos de experiência em preparação", "Método testado por milhares de alunos"],
+  },
+  summary: {
+    title: "Resumindo", text: "Você recebe tudo o que precisa para estudar com método, sem precisar adquirir mais materiais.",
+    guaranteeTitle: "Garantia de 07 dias:", guarantee: "em observância ao art. 49 do Código de Defesa do Consumidor, você pode desistir em até 7 dias após a contratação.",
+    notFor: ["Não é para quem acredita em fórmulas mágicas.", "Não é para quem não quer construir uma rotina constante de estudos.", "Não é para quem quer ser aprovado estudando apenas 10 dias."],
+  },
+  benefits: {
+    title: "Por que vale a pena a carreira?", button: "QUERO COMPRAR A MENTORIA", link: "#planos",
+    items: ["Remuneração acima da média", "Abono fardamento", "Aposentadoria integral", "Plano de saúde", "ADE por tempo de serviço", "Férias de 25 dias úteis + 1/3", "13º salário", "Possibilidade de ascensão rápida", "Porte de arma de âmbito nacional"],
+  },
+  banner: { text: "Colecionando Primeiros Colocados" },
+  faq: {
+    title: "Perguntas frequentes", button: "Comprar Agora", link: "#planos",
+    items: [
+      { q: "Em quanto tempo recebo o acesso?", a: "Assim que o Pix é confirmado, o acesso é liberado." },
+      { q: "Quais formas de pagamento?", a: "Pix, com QR Code ou copia e cola. A confirmação é automática." },
+      { q: "Existe garantia?", a: "Sim. 7 dias de garantia, conforme o art. 49 do Código de Defesa do Consumidor." },
+      { q: "Preciso renovar?", a: "Não. Sem renovação automática." },
+    ],
+  },
+  final: { title: "Sua farda começa com a decisão de hoje.", text: "Garanta sua vaga e comece com cronograma, material e suporte desde o primeiro dia.", button: "GARANTIR MINHA VAGA →", link: "#planos" },
 };
 
-export const STATS = [
-  { n: "46", l: "1º lugar Soldado" },
-  { n: "5", l: "1º lugar Cadete" },
-  { n: "5.628", l: "alunos aprovados" },
-];
-
-export const TRACKS = [
-  { id: "soldado", label: "Soldado PMMG", sub: "2027" },
-  { id: "cadete", label: "Cadete CFO", sub: "2027" },
-] as const;
-
-export const PLANS = [
-  {
-    id: "3m", name: "3 meses de acesso", priceCents: 56700, featured: false,
-    note: "Mesmo conteúdo e materiais dos planos mais longos",
-    features: ["Acesso integral à plataforma durante os 3 meses", "Mesmo conteúdo e materiais dos planos mais longos"],
-  },
-  {
-    id: "6m", name: "6 meses de acesso", priceCents: 94700, featured: false,
-    features: ["17% menor por mês em relação ao plano de 3 meses", "6 meses completos de acesso à plataforma e aos materiais"],
-  },
-  {
-    id: "12m", name: "12 meses de acesso", priceCents: 142200, featured: true,
-    features: ["Até 15 redações corrigidas", "46% menor por mês em relação ao plano de 3 meses", "12 meses de acesso à plataforma e aos materiais"],
-  },
-] as const;
-
-export const RECEIVES = [
-  "Cronograma individualizado", "Apostilas em PDF", "Videoaulas", "Simulados",
-  "Listas de questões", "Atualizações durante o ano", "Canal exclusivo de dúvidas", "Orientação para as etapas do certame",
-];
-
-export const WHAT_IS = [
-  { t: "Conteúdo passo a passo", d: "Do iniciante ao avançado, em linguagem simples." },
-  { t: "Domine todas as etapas", d: "Prova objetiva, TAF, psicotécnico e exame médico." },
-  { t: "Cronograma individualizado", d: "Montado para o seu tempo disponível." },
-  { t: "Contato direto", d: "Canal exclusivo para tirar dúvidas." },
-  { t: "Atualizações gratuitas", d: "Todas as atualizações durante o seu acesso." },
-  { t: "Material completo", d: "Apostilas, videoaulas e tudo o que for necessário." },
-];
-
-export const FOR_WHO = [
-  "Quem está começando agora e não faz ideia do conteúdo.",
-  "Quem já está avançado e trava em poucas questões.",
-  "Quem tem compromisso em fazer o básico que aprova.",
-  "Quem entende que a cura está no campo de batalha diário.",
-  "Quem não acredita em fórmula mágica e quer estudar com método.",
-];
-
-export const NOT_FOR_WHO = [
-  "Não é para quem acredita em fórmulas mágicas.",
-  "Não é para quem não quer construir uma rotina constante de estudos.",
-  "Não é para quem quer ser aprovado estudando apenas 10 dias.",
-];
-
-export const BENEFITS = [
-  "Remuneração acima da média", "Abono fardamento", "Aposentadoria integral",
-  "Plano de saúde", "ADE por tempo de serviço", "Férias de 25 dias úteis + 1/3",
-  "13º salário", "Possibilidade de ascensão rápida", "Porte de arma de âmbito nacional",
-];
-
-export const FAQ = [
-  { q: "Em quanto tempo recebo o acesso?", a: "Assim que o Pix é confirmado, o acesso é liberado." },
-  { q: "Quais formas de pagamento?", a: "Pix, com QR Code ou copia e cola. A confirmação é automática." },
-  { q: "Existe garantia?", a: "Sim. 7 dias de garantia, conforme o art. 49 do Código de Defesa do Consumidor." },
-  { q: "Preciso renovar?", a: "Não. Sem renovação automática." },
-];
+export type Content = typeof DEFAULT_CONTENT;
 
 export const brl = (cents: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: cents % 100 ? 2 : 0 }).format(cents / 100);
