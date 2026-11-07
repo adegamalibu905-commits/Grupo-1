@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     await updateByReference(reference, { public_id: dep.publicId });
     // Se a GladePay não mandar a imagem do QR, geramos aqui a partir do código copia e cola.
     let qrCodeBase64 = dep.qrCodeBase64;
-    if (!qrCodeBase64) {
+    if (!qrCodeBase64 && dep.qrCodeText) {
       try { qrCodeBase64 = await QRCode.toDataURL(dep.qrCodeText, { margin: 1, width: 360 }); } catch (e) { console.error("qr", e); }
     }
     return NextResponse.json({
