@@ -72,11 +72,10 @@ function parseDeposit(raw: unknown, fallbackExpiresSec: number): GladeDeposit | 
   const flat = flatten(raw);
   const strings = flat.map((f) => ({ ...f, s: typeof f.value === "string" ? f.value.trim() : "" })).filter((f) => f.s);
 
-  const qrCodeText =
+  const qrCodeText: string =
     strings.find((f) => /^000201/.test(f.s) && f.s.length > 50)?.s ??
     strings.find((f) => /br\.gov\.bcb\.pix/i.test(f.s) && !isHttp(f.s) && f.s.length > 50)?.s ??
-    null;
-  if (!qrCodeText) return null;
+    "";
 
   const qrCodeBase64 =
     strings.find((f) => f.s.startsWith("data:image"))?.s ??
@@ -87,6 +86,8 @@ function parseDeposit(raw: unknown, fallbackExpiresSec: number): GladeDeposit | 
     strings.find((f) => f.key.includes("qr") && isHttp(f.s))?.s ?? null;
   const checkoutUrl =
     byKey(flat, ["checkouturl", "paymenturl", "paymentlink", "hostedurl", "checkoutlink", "url", "link"], (v) => isHttp(v) && v !== qrCodeUrl) ?? "";
+
+  if (!qrCodeText && !checkoutUrl) return null;
 
   const txId = byKey(flat, ["txid", "transactionid", "id"]) ?? "";
   const publicId = byKey(flat, ["publicid", "id", "transactionid", "txid", "depositid"]) ?? txId;
@@ -106,33 +107,50 @@ function parseDeposit(raw: unknown, fallbackExpiresSec: number): GladeDeposit | 
   return { ok: true, txId, publicId, amountCents: amountRaw ?? 0, expiresAt, status, qrCodeText, qrCodeBase64, qrCodeUrl, checkoutUrl };
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// Às vezes a GladePay cria a cobrança mas ainda não devolve o código Pix. Consultamos de novo algumas vezes.
+async function waitForQr(dep: GladeDeposit, ttl: number): Promise<GladeDeposit> {
+  const id = dep.publicId || dep.txId;
+  for (let i = 0; i < 3 && !dep.qrCodeText && id; i++) {
+    await sleep(1500);
+    try {
+      const raw = await glade<unknown>(`/transacoes/${encodeURIComponent(id)}`);
+      console.log("gladepay consulta", JSON.stringify(raw).slice(0, 1000));
+      const d = parseDeposit(raw, ttl);
+      if (d?.qrCodeText) return { ...dep, ...d, publicId: dep.publicId || d.publicId, checkoutUrl: d.checkoutUrl || dep.checkoutUrl };
+    } catch { /* tenta de novo */ }
+  }
+  return dep;
+}
+
 async function postDeposit(body: unknown, fallbackExpiresSec: number): Promise<GladeDeposit> {
   const raw = await glade<unknown>("/deposito", { method: "POST", body: JSON.stringify(body) });
   console.log("gladepay resposta", JSON.stringify(raw).slice(0, 2000));
   const dep = parseDeposit(raw, fallbackExpiresSec);
-  if (dep) return dep;
+  if (dep) return waitForQr(dep, fallbackExpiresSec);
   const apiMsg = raw && typeof raw === "object" ? str((raw as Record<string, unknown>).error) ?? str((raw as Record<string, unknown>).message) : null;
   if (apiMsg) throw new GladeError(apiMsg, 502);
   const keys = raw && typeof raw === "object" ? Object.keys(raw as object).join(", ") : typeof raw;
   throw new GladeError(`resposta sem código Pix; campos recebidos: ${keys || "nenhum"}`, 502);
 }
 
-// Pix: POST /v1/deposito. Tenta o corpo completo; se falhar por qualquer motivo (exceto chave inválida),
-// repete só com os campos documentados (amountCents, reference, callbackUrl, customerEmail).
+// Pix: POST /v1/deposito. Começa só com os campos documentados (amountCents, reference, callbackUrl, customerEmail);
+// se falhar (exceto chave inválida), tenta o corpo completo. Sem código Pix, devolvemos o link do checkout da GladePay.
 export async function createDeposit(input: CreateDepositInput): Promise<GladeDeposit> {
   const ttl = input.expiresInSeconds ?? 1800;
+  const minimal = {
+    amountCents: input.amountCents,
+    reference: input.reference,
+    callbackUrl: input.callbackUrl,
+    ...(input.customerEmail ? { customerEmail: input.customerEmail } : {}),
+  };
   try {
-    return await postDeposit(input, ttl);
+    return await postDeposit(minimal, ttl);
   } catch (e) {
     if (e instanceof GladeError && (e.status === 401 || e.status === 403)) throw e;
-    console.error("gladepay corpo completo falhou, tentando o mínimo:", e instanceof Error ? e.message : e);
-    const minimal = {
-      amountCents: input.amountCents,
-      reference: input.reference,
-      callbackUrl: input.callbackUrl,
-      ...(input.customerEmail ? { customerEmail: input.customerEmail } : {}),
-    };
-    return postDeposit(minimal, ttl);
+    console.error("gladepay corpo mínimo falhou, tentando o completo:", e instanceof Error ? e.message : e);
+    return postDeposit(input, ttl);
   }
 }
 
