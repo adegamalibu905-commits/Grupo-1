@@ -42,3 +42,24 @@
 .ck-secure b{font-weight:700}
 .ck-legal{padding:0 4px;font-size:clamp(12px,3.6vw,15px);line-height:1.5;color:#6b7280;text-align:left}
 .ck-legal b{font-weight:700}
+
+/* === Ajuste: espaço em branco no topo + CTA e textos menores === */
+.modal-bg .modal{padding:44px 16px 22px}
+.modal .ck-top{margin-bottom:12px;gap:12px}
+.modal .ck-info h4{font-size:clamp(13px,3.8vw,16px)}
+.modal .ck-course,.modal .ck-access{font-size:clamp(11px,3vw,13px)}
+.modal .ck-small,.modal .ck-old{font-size:clamp(11px,3vw,12px)}
+.modal .ck-price{font-size:clamp(18px,5.6vw,24px)}
+.modal .ck-cupom-head{font-size:clamp(12px,3.4vw,14px);padding:11px 12px}
+.modal .fld label{font-size:12px}
+.modal .fld input{font-size:13px;padding:10px 12px}
+.modal .fld em{font-size:11px}
+.modal .ck-box h5{font-size:clamp(13px,3.7vw,15px)}
+.modal .ck-box p{font-size:clamp(11px,3.2vw,13px)}
+.modal .ck-det h5{font-size:clamp(14px,4vw,17px)}
+.modal .ck-row{font-size:clamp(11px,3.3vw,14px)}
+.modal .ck-total{font-size:clamp(15px,4.4vw,19px)}
+.modal .ck-total b{font-size:clamp(16px,5vw,21px)}
+.modal .ck-fin{padding:13px 14px;font-size:clamp(14px,4vw,16px);border-radius:10px}
+.modal .ck-wait,.modal .ck-secure{font-size:clamp(11px,3.2vw,13px)}
+.modal .ck-legal{font-size:clamp(10px,3vw,12px)}
