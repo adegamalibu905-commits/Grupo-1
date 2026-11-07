@@ -11,7 +11,7 @@ const SELLER = "PMMinas Negócios Digitais LTDA";    // texto "Curso ofertado po
 
 const money = (c: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(c / 100);
 
-export type Selection = { track: string; plan: string; title: string; priceCents: number };
+export type Selection = { track: string; plan: string; title: string; priceCents: number; originalCents: number };
 type Pix = { publicId: string; expiresAt: string; qrCodeText: string; qrCodeBase64: string | null; qrCodeUrl: string | null; checkoutUrl: string };
 type Step = "form" | "loading" | "pix" | "paid";
 type Applied = { code: string; percent: number; originalCents: number; discountCents: number; totalCents: number };
@@ -31,6 +31,8 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
   const [coupon, setCoupon] = useState<Applied | null>(null);
 
   const total = coupon ? coupon.totalCents : selection.priceCents;
+  const original = selection.originalCents;
+  const discount = original - total;
   const [trackLabel, planName = ""] = selection.title.split(" — ");
   const months = planName.match(/\d+/)?.[0];
   const productShort = `🎖️ ${BRAND_TAG} ${trackLabel.toUpperCase()}`;
@@ -133,7 +135,7 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
             <p className="ck-course">Curso: {productShort}</p>
             <div className="ck-small">à vista no Pix</div>
             <div className="ck-price">{money(total)}</div>
-            {coupon && <div className="ck-old">de {money(coupon.originalCents)}</div>}
+            {discount > 0 && <div className="ck-old">de {money(original)}</div>}
             <p className="ck-access">{planName}</p>
           </div>
         </div>
@@ -184,8 +186,8 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
 
           <div className="ck-det">
             <h5>Detalhes da Compra</h5>
-            <div className="ck-row"><span>{productShort}</span><b>{money(selection.priceCents)}</b></div>
-            {coupon && <div className="ck-row desc"><span>Cupom {coupon.code} (−{coupon.percent}%)</span><b>− {money(coupon.discountCents)}</b></div>}
+            <div className="ck-row"><span>{productShort}</span><b>{money(original)}</b></div>
+            {discount > 0 && <div className="ck-row desc"><span>{coupon ? `Cupom ${coupon.code} (−${coupon.percent}%)` : `Desconto à vista no Pix (−${Math.round((discount / original) * 100)}%)`}</span><b>− {money(discount)}</b></div>}
             <div className="ck-total"><span>Total</span><b>{money(total)}</b></div>
           </div>
 
