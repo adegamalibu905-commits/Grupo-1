@@ -208,11 +208,17 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
 
         {step === "pix" && pix && (<div className="center">
           <p><b>Pague com Pix</b> — {left > 0 ? `expira em ${mm}:${ss}` : "Pix expirado"}</p>
-          {qrSrc ? <img className="qr" src={qrSrc} alt="QR Code Pix" /> : <div className="skel qr" />}
-          <div className="code">{pix.qrCodeText}</div>
+          {pix.qrCodeText ? (<>
+            {qrSrc ? <img className="qr" src={qrSrc} alt="QR Code Pix" /> : <div className="skel qr" />}
+            <div className="code">{pix.qrCodeText}</div>
+          </>) : (
+            <p className="muted" style={{ margin: "12px 0" }}>Toque no botão abaixo para abrir a página segura de pagamento e finalizar com Pix.</p>
+          )}
           <div className="stack">
-            <button className="btn btn-pay" onClick={copy}>{copied ? "Copiado ✓" : "Copiar código Pix"}</button>
-            {pix.checkoutUrl && <a className="btn btn-ghost" style={{ color: "#1b1b2f", borderColor: "#cfd0e0" }} href={pix.checkoutUrl} target="_blank" rel="noopener noreferrer">Abrir página de pagamento</a>}
+            {pix.qrCodeText && <button className="btn btn-pay" onClick={copy}>{copied ? "Copiado ✓" : "Copiar código Pix"}</button>}
+            {pix.checkoutUrl && (pix.qrCodeText
+              ? <a className="btn btn-ghost" style={{ color: "#1b1b2f", borderColor: "#cfd0e0" }} href={pix.checkoutUrl} target="_blank" rel="noopener noreferrer">Abrir página de pagamento</a>
+              : <a className="btn btn-pay" href={pix.checkoutUrl} target="_blank" rel="noopener noreferrer">Ir para o pagamento Pix</a>)}
           </div>
           {left > 0
             ? <p className="muted" style={{ marginTop: 12 }}>Aguardando confirmação do pagamento…</p>
