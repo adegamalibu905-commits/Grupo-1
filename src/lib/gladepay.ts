@@ -117,6 +117,7 @@ async function waitForQr(dep: GladeDeposit, ttl: number): Promise<GladeDeposit> 
     try {
       const raw = await glade<unknown>(`/transacoes/${encodeURIComponent(id)}`);
       console.log("gladepay consulta", JSON.stringify(raw).slice(0, 1000));
+      if (raw && typeof raw === "object" && (raw as Record<string, unknown>).failureReason) break; // a GladePay já informou falha: não adianta esperar
       const d = parseDeposit(raw, ttl);
       if (d?.qrCodeText) return { ...dep, ...d, publicId: dep.publicId || d.publicId, checkoutUrl: d.checkoutUrl || dep.checkoutUrl };
     } catch { /* tenta de novo */ }
@@ -128,7 +129,12 @@ async function postDeposit(body: unknown, fallbackExpiresSec: number): Promise<G
   const raw = await glade<unknown>("/deposito", { method: "POST", body: JSON.stringify(body) });
   console.log("gladepay resposta", JSON.stringify(raw).slice(0, 2000));
   const dep = parseDeposit(raw, fallbackExpiresSec);
-  if (dep) return waitForQr(dep, fallbackExpiresSec);
+  if (dep) {
+    const full = await waitForQr(dep, fallbackExpiresSec);
+    // Sem código Pix não há o que mostrar na tela: nunca mandamos o cliente para a página da GladePay.
+    if (!full.qrCodeText) throw new GladeError("o provedor de pagamento não confirmou o Pix", 502);
+    return full;
+  }
   const apiMsg = raw && typeof raw === "object" ? str((raw as Record<string, unknown>).error) ?? str((raw as Record<string, unknown>).message) : null;
   if (apiMsg) throw new GladeError(apiMsg, 502);
   const keys = raw && typeof raw === "object" ? Object.keys(raw as object).join(", ") : typeof raw;
