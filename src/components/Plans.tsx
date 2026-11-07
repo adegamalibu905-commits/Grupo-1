@@ -4,6 +4,7 @@ import type { Content } from "@/config/site";
 import CheckoutModal, { type Selection } from "./CheckoutModal";
 import Reveal from "./Reveal";
 import { useTween } from "./CountUp";
+import { computePrice } from "@/lib/coupons";
 
 function Price({ v }: { v: number }) {
   const n = useTween(v);
@@ -28,18 +29,25 @@ export default function Plans({ data, career }: { data: Content["plans"]; career
         ))}
       </div>
       <div className="plans">
-        {track.plans.map((p, i) => (
+        {track.plans.map((p, i) => {
+          const orig = Math.round(p.price * 100);
+          const info = computePrice(orig);
+          const off = info.percent > 0;
+          return (
           <div key={i} className={`plan ${p.featured ? "feat" : ""}`}>
             {p.featured && <span className="ribbon">{data.ribbon}</span>}
             <span className="lbl">{p.label}</span>
             <h3>{p.name}</h3>
-            {p.oldPrice > 0 && <div className="old">de R$ {p.oldPrice.toLocaleString("pt-BR")}</div>}
-            <Price v={p.price} />
-            <div className="pnote">{data.priceNote}</div>
+            {off
+              ? <div className="old">de R$ {p.price.toLocaleString("pt-BR")}</div>
+              : p.oldPrice > 0 && <div className="old">de R$ {p.oldPrice.toLocaleString("pt-BR")}</div>}
+            <Price v={info.totalCents / 100} />
+            <div className="pnote">{data.priceNote}{off ? ` • ${info.percent}% OFF` : ""}</div>
             <ul className="checks">{p.features.map((x, j) => <li key={j}>{x}</li>)}</ul>
-            <button className="btn btn-gold" onClick={() => setSel({ track: track.id, plan: p.id, title: `${track.label} — ${p.name}`, priceCents: Math.round(p.price * 100) })}>{data.cta}</button>
+            <button className="btn btn-gold" onClick={() => setSel({ track: track.id, plan: p.id, title: `${track.label} — ${p.name}`, priceCents: info.totalCents, originalCents: orig })}>{data.cta}</button>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <Reveal>
