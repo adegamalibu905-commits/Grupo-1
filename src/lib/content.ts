@@ -57,4 +57,4 @@ export async function saveContent(data: unknown): Promise<void> {
   if (process.env.VERCEL) throw new Error("Configure SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY na Vercel para salvar.");
   await fs.mkdir(path.dirname(FILE), { recursive: true });
   await fs.writeFile(FILE, JSON.stringify(c, null, 2));
-}
+} 
