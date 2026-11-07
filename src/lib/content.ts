@@ -5,7 +5,12 @@ import { DEFAULT_CONTENT, type Content } from "@/config/site";
 const URL_ = process.env.SUPABASE_URL;
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const FILE = path.join(process.cwd(), ".data", "content.json");
-const H = () => ({ apikey: KEY!, Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" });
+
+// Chaves novas (sb_secret_...) não são JWT: vão só no header apikey. Chaves antigas (JWT) também precisam do Bearer.
+const H = (): Record<string, string> => ({
+  apikey: KEY!, "Content-Type": "application/json",
+  ...(KEY!.startsWith("sb_") ? {} : { Authorization: `Bearer ${KEY}` }),
+});
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function merge(d: any, s: any): any {
