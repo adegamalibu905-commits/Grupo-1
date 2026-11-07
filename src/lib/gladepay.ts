@@ -43,11 +43,86 @@ async function glade<T>(path: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
+type Flat = { key: string; value: unknown; depth: number };
+const nk = (k: string) => k.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+function flatten(o: unknown, depth = 0, out: Flat[] = []): Flat[] {
+  if (!o || typeof o !== "object" || depth > 5) return out;
+  for (const [k, v] of Object.entries(o as Record<string, unknown>)) {
+    out.push({ key: nk(k), value: v, depth });
+    flatten(v, depth + 1, out);
+  }
+  return out;
+}
+
+const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : typeof v === "number" ? String(v) : null);
+const isHttp = (v: string) => /^https?:\/\//i.test(v);
+
+function byKey(flat: Flat[], names: string[], test: (v: string) => boolean = () => true): string | null {
+  for (const n of names) {
+    const hit = flat.filter((f) => f.key === n).sort((a, b) => a.depth - b.depth).map((f) => str(f.value)).find((v) => v && test(v));
+    if (hit) return hit;
+  }
+  return null;
+}
+
+// A API pode devolver os campos no topo ou aninhados (data, deposit...), com nomes variados.
+// Por isso procuramos pelo conteúdo: o código Pix sempre começa com 000201 e contém br.gov.bcb.pix.
+function parseDeposit(raw: unknown, fallbackExpiresSec: number): GladeDeposit | null {
+  const flat = flatten(raw);
+  const strings = flat.map((f) => ({ ...f, s: typeof f.value === "string" ? f.value.trim() : "" })).filter((f) => f.s);
+
+  const qrCodeText =
+    strings.find((f) => /^000201/.test(f.s) && f.s.length > 50)?.s ??
+    strings.find((f) => /br\.gov\.bcb\.pix/i.test(f.s) && !isHttp(f.s) && f.s.length > 50)?.s ??
+    null;
+  if (!qrCodeText) return null;
+
+  const qrCodeBase64 =
+    strings.find((f) => f.s.startsWith("data:image"))?.s ??
+    strings.find((f) => f.key.includes("base64") && f.s.length > 100)?.s ??
+    strings.find((f) => f.key.includes("qr") && /^iVBOR/.test(f.s))?.s ??
+    null;
+  const qrCodeUrl =
+    strings.find((f) => f.key.includes("qr") && isHttp(f.s))?.s ?? null;
+  const checkoutUrl =
+    byKey(flat, ["checkouturl", "paymenturl", "paymentlink", "hostedurl", "checkoutlink", "url", "link"], (v) => isHttp(v) && v !== qrCodeUrl) ?? "";
+
+  const txId = byKey(flat, ["txid", "transactionid", "id"]) ?? "";
+  const publicId = byKey(flat, ["publicid", "id", "transactionid", "txid", "depositid"]) ?? txId;
+
+  let expiresAt = "";
+  for (const f of flat.filter((x) => x.key.includes("expir")).sort((a, b) => a.depth - b.depth)) {
+    if (typeof f.value === "string" && !Number.isNaN(Date.parse(f.value))) { expiresAt = new Date(f.value).toISOString(); break; }
+    if (typeof f.value === "number" && f.value > 0) {
+      expiresAt = f.value > 1e12 ? new Date(f.value).toISOString() : f.value > 1e9 ? new Date(f.value * 1000).toISOString() : new Date(Date.now() + f.value * 1000).toISOString();
+      break;
+    }
+  }
+  if (!expiresAt) expiresAt = new Date(Date.now() + fallbackExpiresSec * 1000).toISOString();
+
+  const status = byKey(flat, ["status"]) ?? "CREATED";
+  const amountRaw = flat.find((f) => f.key === "amountcents" && typeof f.value === "number")?.value as number | undefined;
+  return { ok: true, txId, publicId, amountCents: amountRaw ?? 0, expiresAt, status, qrCodeText, qrCodeBase64, qrCodeUrl, checkoutUrl };
+}
+
+async function postDeposit(body: unknown, fallbackExpiresSec: number): Promise<GladeDeposit> {
+  const raw = await glade<unknown>("/deposito", { method: "POST", body: JSON.stringify(body) });
+  console.log("gladepay resposta", JSON.stringify(raw).slice(0, 2000));
+  const dep = parseDeposit(raw, fallbackExpiresSec);
+  if (!dep) {
+    const keys = raw && typeof raw === "object" ? Object.keys(raw as object).join(", ") : typeof raw;
+    throw new GladeError(`resposta sem código Pix; campos recebidos: ${keys || "nenhum"}`, 502);
+  }
+  return dep;
+}
+
 // Pix: POST /v1/deposito. Tenta o corpo completo; se a API recusar campos extras (4xx),
 // repete só com os campos documentados (amountCents, reference, callbackUrl, customerEmail).
 export async function createDeposit(input: CreateDepositInput): Promise<GladeDeposit> {
+  const ttl = input.expiresInSeconds ?? 1800;
   try {
-    return await glade<GladeDeposit>("/deposito", { method: "POST", body: JSON.stringify(input) });
+    return await postDeposit(input, ttl);
   } catch (e) {
     if (e instanceof GladeError && e.status >= 400 && e.status < 500 && e.status !== 401 && e.status !== 403) {
       const minimal = {
@@ -56,7 +131,7 @@ export async function createDeposit(input: CreateDepositInput): Promise<GladeDep
         callbackUrl: input.callbackUrl,
         ...(input.customerEmail ? { customerEmail: input.customerEmail } : {}),
       };
-      return glade<GladeDeposit>("/deposito", { method: "POST", body: JSON.stringify(minimal) });
+      return postDeposit(minimal, ttl);
     }
     throw e;
   }
