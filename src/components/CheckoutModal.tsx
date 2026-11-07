@@ -68,7 +68,15 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
 
   async function submit() {
     setTouched({ email: true, email2: true, name: true, cpf: true, phone: true });
-    if (!valid) return;
+    if (!valid) {
+      const first = (["email", "email2", "name", "cpf", "phone"] as const).find((k) => errs[k]);
+      if (first) {
+        const el = document.getElementById(first);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        el?.focus();
+      }
+      return;
+    }
     setError(""); setStep("loading");
     try {
       const r = await fetch("/api/checkout", {
@@ -164,7 +172,6 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
           {field("name", "Nome Completo", "Seu nome completo")}
           {field("cpf", "CPF", "___.___.___-__", "text", "numeric")}
           {field("phone", "Celular", "Informe seu celular", "tel", "numeric")}
-          <div className="method"><div>Pix</div></div>
 
           {/* BLOCO IGUAL À 1ª IMAGEM */}
           <div className="ck-box">
@@ -182,7 +189,7 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
             <div className="ck-total"><span>Total</span><b>{money(total)}</b></div>
           </div>
 
-          <button className="ck-fin" disabled={!valid || step === "loading"} onClick={submit}>Finalizar Pedido ✓</button>
+          <button className="ck-fin" disabled={step === "loading"} onClick={submit}>Finalizar Pedido ✓</button>
           {step === "loading" && <div className="ck-wait"><span className="ck-spin" />Aguardando validação do seu dispositivo...</div>}
 
           <div className="ck-secure">
