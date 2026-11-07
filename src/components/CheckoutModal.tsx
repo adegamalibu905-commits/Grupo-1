@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { isCpf, isEmail, isName, isPhone, maskCpf, maskPhone } from "@/lib/validate";
+import { THUMB } from "@/lib/thumb";
 import "./checkout.css";
 
 // ====== EDITE AQUI ======
 const BRAND_TAG = "[Mentoria OBA]";                 // nome que aparece antes da carreira
-const THUMB = "/mentoria-oba.png";                  // imagem do topo (arquivo em public/)
 const SELLER = "PMMinas Negócios Digitais LTDA";    // texto "Curso ofertado por"
 // ========================
 
@@ -117,11 +117,6 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
   return (
     <div className="modal-bg" onClick={(e) => e.target === e.currentTarget && onClose()} role="dialog" aria-modal="true">
       <div className="modal">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h3>Finalizar pedido</h3>
-          <button onClick={onClose} aria-label="Fechar" style={{ border: 0, background: "none", fontSize: 24, cursor: "pointer" }}>×</button>
-        </div>
-
         {/* TOPO (igual à 2ª imagem) */}
         <div className="ck-top">
           <img className="ck-thumb" src={THUMB} alt={productFull} />
