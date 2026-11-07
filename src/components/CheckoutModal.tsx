@@ -87,6 +87,7 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Erro ao gerar o Pix");
+      setLeft(Math.max(0, Math.floor((new Date(d.expiresAt).getTime() - Date.now()) / 1000)));
       setPix(d); setStep("pix");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro ao gerar o Pix"); setStep("form");
@@ -206,14 +207,16 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
         </>)}
 
         {step === "pix" && pix && (<div className="center">
-          <p><b>Pague com Pix</b> — expira em {mm}:{ss}</p>
+          <p><b>Pague com Pix</b> — {left > 0 ? `expira em ${mm}:${ss}` : "Pix expirado"}</p>
           {qrSrc ? <img className="qr" src={qrSrc} alt="QR Code Pix" /> : <div className="skel qr" />}
           <div className="code">{pix.qrCodeText}</div>
           <div className="stack">
             <button className="btn btn-pay" onClick={copy}>{copied ? "Copiado ✓" : "Copiar código Pix"}</button>
             {pix.checkoutUrl && <a className="btn btn-ghost" style={{ color: "#1b1b2f", borderColor: "#cfd0e0" }} href={pix.checkoutUrl} target="_blank" rel="noopener noreferrer">Abrir página de pagamento</a>}
           </div>
-          <p className="muted" style={{ marginTop: 12 }}>Aguardando confirmação do pagamento…</p>
+          {left > 0
+            ? <p className="muted" style={{ marginTop: 12 }}>Aguardando confirmação do pagamento…</p>
+            : <button className="btn btn-pay" style={{ marginTop: 12 }} onClick={() => { setPix(null); setStep("form"); }}>Gerar novo Pix</button>}
         </div>)}
 
         {step === "paid" && (<div className="ok-box">
