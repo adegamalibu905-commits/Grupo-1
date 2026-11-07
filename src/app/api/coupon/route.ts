@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getContent } from "@/lib/content";
-import { applyDiscount, findCoupon } from "@/lib/coupons";
+import { computePrice, findCoupon } from "@/lib/coupons";
 
 export const runtime = "nodejs";
 
@@ -17,10 +17,10 @@ export async function POST(req: Request) {
   if (!plan) return NextResponse.json({ error: "Plano inválido" }, { status: 400 });
 
   const originalCents = Math.round(plan.price * 100);
-  const totalCents = applyDiscount(originalCents, coupon.percent);
+  const { totalCents, percent } = computePrice(originalCents, coupon);
   return NextResponse.json({
     code: coupon.code,
-    percent: coupon.percent,
+    percent,
     originalCents,
     discountCents: originalCents - totalCents,
     totalCents,
