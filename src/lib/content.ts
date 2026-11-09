@@ -26,8 +26,29 @@ function merge(d: any, s: any): any {
 
 export function normalize(saved: unknown): Content {
   const c = merge(DEFAULT_CONTENT, saved) as Content;
-  const have = new Set(c.sections.map((s) => s.id));
-  for (const s of DEFAULT_CONTENT.sections) if (!have.has(s.id)) c.sections.push({ ...s });
+  const def = DEFAULT_CONTENT.sections;
+  const ids = new Set(def.map((s) => s.id));
+  const savedHasNew = c.sections.some((s) => s.id === "redacao");
+  if (!savedHasNew) {
+    // Migração única: aplica a nova ordem da página (sem "Como funciona") usando os padrões.
+    const keep = new Set(["hero", "video", "plans", "renew", "results", "what", "testimonials"]);
+    const was = new Map(c.sections.map((s) => [s.id, s.on]));
+    c.sections = def.map((s) => ({ ...s, on: keep.has(s.id) && was.has(s.id) ? (was.get(s.id) as boolean) : s.on }));
+  } else {
+    const list = c.sections.filter((s) => ids.has(s.id));
+    const have = new Set(list.map((s) => s.id));
+    def.forEach((s, i) => {
+      if (have.has(s.id)) return;
+      let at = list.length;
+      for (let j = i - 1; j >= 0; j--) {
+        const k = list.findIndex((x) => x.id === def[j].id);
+        if (k >= 0) { at = k + 1; break; }
+      }
+      list.splice(at, 0, { ...s });
+      have.add(s.id);
+    });
+    c.sections = list;
+  }
   c.what.items = c.what.items.map((i) => ({ ...i, image: i.image || "" }));
   return c;
 }
