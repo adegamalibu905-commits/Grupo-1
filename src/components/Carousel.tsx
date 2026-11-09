@@ -1,8 +1,10 @@
 "use client";
 import { useRef, useState } from "react";
 import Rich from "@/components/Rich";
+import VideoBox from "@/components/VideoBox";
+import "./carousel.css";
 
-type Item = { image: string; text: string; name: string; role: string };
+type Item = { image: string; video?: string; poster?: string; text: string; name: string; role: string };
 
 export default function Carousel({ items }: { items: Item[] }) {
   const [i, setI] = useState(0);
@@ -10,7 +12,9 @@ export default function Carousel({ items }: { items: Item[] }) {
   const n = items.length;
   if (!n) return null;
   const go = (d: number) => setI((v) => (v + d + n) % n);
-  const it = items[i];
+  const it = items[Math.min(i, n - 1)];
+  const video = (it.video || "").trim();
+  const cover = it.poster || it.image || "";
   return (
     <div
       className="ns-car"
@@ -24,7 +28,13 @@ export default function Carousel({ items }: { items: Item[] }) {
     >
       <button type="button" className="ns-arrow l" aria-label="Anterior" onClick={() => go(-1)}>‹</button>
       <div className="ns-slide" key={i}>
-        {it.image ? <img className="ns-cav" src={it.image} alt={it.name} /> : <div className="ns-cav ns-cav-empty" aria-hidden>👤</div>}
+        {video ? (
+          <div className="ns-cvid"><VideoBox url={video} poster={cover} /></div>
+        ) : it.image ? (
+          <img className="ns-cav" src={it.image} alt={it.name} />
+        ) : (
+          <div className="ns-cav ns-cav-empty" aria-hidden>👤</div>
+        )}
         <p className="ns-ctext"><Rich text={it.text} /></p>
         <p className="ns-cname">{it.name}</p>
         <p className="ns-crole">{it.role}</p>
