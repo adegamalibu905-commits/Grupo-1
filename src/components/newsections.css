@@ -1,0 +1,120 @@
+/* ===== Padrão menor em todo o site (destaques ficam em negrito nas palavras-chave) ===== */
+body{font-size:15px;line-height:1.55}
+.muted{font-size:14px}
+.over{font-size:10px}
+.h1{font-size:clamp(28px,6vw,52px)}
+.h2{font-size:clamp(24px,5.2vw,34px)}
+.whatsec .h2{font-size:clamp(28px,7vw,40px)}
+.wintro,.whigh{font-size:clamp(17px,4.4vw,21px)}
+.wcard h3{font-size:18px}
+.wcard p{font-size:15.5px;line-height:1.5}
+.btn{font-size:13px;padding:14px 16px}
+.stat b{font-size:clamp(22px,4.4vw,32px)}
+.price b{font-size:46px}
+.plan h3{font-size:19px}
+.checks{font-size:13px}
+.card h3{font-size:16px}
+.quote{font-size:13px}
+.ctitle{font-size:clamp(20px,5vw,28px)}
+.citem b{font-size:14px}
+.rchip{font-size:11.5px}
+b,strong{font-weight:700}
+
+/* ===== Blocos novos (iguais ao modelo) ===== */
+.ns{font-family:var(--font-body),system-ui,sans-serif}
+.ns-in{max-width:640px;margin:0 auto;padding:0 20px}
+.ns-h{font-family:var(--font-red),var(--font-head),system-ui,sans-serif;font-weight:800;line-height:1.14;text-align:center;font-size:clamp(24px,6.2vw,36px)}
+.ns p{font-size:15px;line-height:1.6}
+.ns-black{background:#000;color:#fff}
+.ns-black b{color:#fff}
+.ns-black p{color:#d9d5cc}
+.ns-center{text-align:center}
+.ns-img{width:100%;border-radius:16px;margin:0 auto}
+.ns-img.rounded{max-width:410px}
+
+/* Correção de redações */
+.ns-red{padding:56px 0 48px}
+.ns-red .ns-h{color:#fff;margin-bottom:32px}
+.ns-red .ns-lines{margin:22px 0}
+.ns-red .ns-lines p{margin-bottom:4px}
+
+/* Para quem é */
+.ns-brown{background:#322b21;color:#fff;padding:56px 0 52px}
+.ns-brown .ns-h{font-family:var(--font-head),system-ui,sans-serif;font-weight:900;letter-spacing:-.02em;font-size:clamp(28px,7vw,42px);color:#fff}
+.ns-brule{width:90px;height:2px;margin:20px auto 30px;background:linear-gradient(90deg,transparent,var(--gold-l),transparent)}
+.ns-ticks{list-style:none;display:grid;gap:18px;margin:0 0 28px}
+.ns-ticks li{display:flex;gap:14px;align-items:flex-start;font-size:15px;line-height:1.5;color:#f2eee6}
+.ns-ticks li b{color:#fff}
+.ns-ticks svg{flex:none;width:32px;height:32px;margin-top:-2px}
+.ns-photo{margin:26px auto;max-width:410px}
+.ns-photo img{width:100%;border-radius:18px;display:block}
+.ns-qcard{background:#4a423a;border:1px solid #5d544a;border-radius:14px;padding:22px 18px;text-align:center;margin:22px 0}
+.ns-qcard h3{font-family:var(--font-head),system-ui,sans-serif;font-weight:800;font-size:19px;line-height:1.25;color:#fff;margin-bottom:12px}
+.ns-qcard p{color:#f1ede5}
+.ns-cta{display:flex;align-items:center;justify-content:center;max-width:380px;margin:30px auto;position:relative}
+.ns-cta i{font-style:normal;position:absolute;right:22px;font-size:17px}
+
+/* O que você irá receber */
+.ns-light{background:#fafafa;color:#111;padding:44px 0 30px}
+.ns-light .ns-box{background:#ececec;border-radius:12px;padding:20px 16px;margin:0 0 26px}
+.ns-light .ns-h{color:#111}
+.ns-light p{color:#222;text-align:center;margin-bottom:18px}
+.ns-light p b{color:#000}
+.ns-light .video{margin:20px auto}
+.ns-sum{background:#ececec;border-radius:12px;padding:28px 18px 22px;margin:34px 0 20px}
+.ns-sum .ns-h{font-size:clamp(34px,9vw,46px);font-weight:900;margin-bottom:18px}
+.ns-sum p{margin-bottom:16px}
+.ns-sum .ns-sticker{max-width:300px;margin:22px auto 8px}
+.ns-pay{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin:26px 0 14px}
+.ns-pay span{font-size:10.5px;font-weight:700;color:#111;display:flex;align-items:center;gap:6px;text-align:left;line-height:1.15}
+.ns-pay span::before{content:"▣";font-size:20px;line-height:1}
+.ns-payimg{max-width:100%;margin:26px auto 14px}
+.ns-av{display:flex;align-items:center;justify-content:center;gap:0;margin-top:10px}
+.ns-av img{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid #ececec;margin-left:-10px}
+.ns-av img:first-child{margin-left:0}
+.ns-stars{color:#f5b800;font-size:22px;letter-spacing:2px;line-height:1}
+.ns-proof{font-size:10.5px!important;color:#333!important;margin:2px 0 0!important;font-weight:600}
+.ns-sum .ns-rowproof{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+
+/* Afinal, o que é fazer o básico */
+.ns-basic{padding:56px 0 60px}
+.ns-basic .ns-h{color:#fff;font-family:var(--font-body),system-ui,sans-serif;font-weight:700;font-size:clamp(28px,7vw,40px);margin-bottom:36px}
+.ns-basic .ns-ticks{margin:0}
+
+/* Cuidado! carrossel */
+.ns-caution{background:#fafafa;color:#000;padding:44px 0 56px}
+.ns-caution .ns-h{color:#000;font-size:clamp(24px,6.2vw,34px);margin-bottom:28px}
+.ns-car{position:relative;background:#000;border-radius:26px;padding:42px 36px 40px;text-align:center;color:#fff;max-width:640px;margin:0 auto}
+.ns-slide{animation:nsfade .4s ease}
+@keyframes nsfade{from{opacity:0;transform:translateY(8px)}}
+.ns-cav{width:126px;height:126px;border-radius:50%;object-fit:cover;margin:0 auto 26px;background:#1b1b1b;display:block}
+.ns-cav-empty{display:grid;place-items:center;font-size:44px}
+.ns-ctext{font-size:15px;line-height:1.6;color:#f4f4f4;margin-bottom:26px}
+.ns-cname{font-weight:700;font-style:italic;font-size:18px;color:#fff}
+.ns-crole{font-style:italic;font-weight:500;font-size:17px;color:#ffd400;margin-top:2px}
+.ns-arrow{position:absolute;top:50%;transform:translateY(-50%);background:none;border:0;color:#ffd400;font-size:30px;line-height:1;cursor:pointer;padding:6px 8px}
+.ns-arrow.l{left:6px}.ns-arrow.r{right:6px}
+.ns-dots{display:flex;gap:8px;justify-content:center;margin-top:24px}
+.ns-dots button{width:8px;height:8px;border-radius:50%;border:0;background:#555;padding:0;cursor:pointer}
+.ns-dots button.on{background:#ffd400}
+
+/* Placa OBA */
+.ns-placa{background:#222;color:#fff;padding:40px 0 0;text-align:center}
+.ns-placa .ns-h{font-family:var(--font-body),system-ui,sans-serif;font-weight:700;font-size:clamp(30px,8vw,44px);color:#fff;margin-bottom:22px}
+.ns-placa p{color:#f1f1f1;margin-bottom:18px}
+.ns-placa b{color:#fff}
+.ns-placa .ns-pimg{margin-top:26px;width:100%;display:block}
+.ns-placa .video{border-radius:0;margin:26px 0 0;max-width:none}
+
+/* De onde surgiu (espaço preto antes) */
+.ns-origin{background:#000;color:#fff;padding:36px 0 0}
+.ns-origin .ns-h{font-family:var(--font-body),system-ui,sans-serif;font-weight:700;font-size:clamp(26px,6.6vw,38px);color:#fff;margin-bottom:26px}
+.ns-origin .ns-h span{color:#ffd400}
+.ns-origin p{margin-bottom:18px}
+.ns-orimg{margin:34px 12px 0;background:#1b1b1b;border-radius:10px;overflow:hidden}
+.ns-orimg img{width:100%;display:block}
+
+/* Rodapé */
+.ns-foot{background:#000;color:#fff;text-align:center;padding:26px 16px 110px;font-family:var(--font-red),var(--font-body),system-ui,sans-serif;font-size:13px;line-height:1.5}
+.ns-foot p+p{margin-top:4px}
+@media(min-width:800px){.ns-in{max-width:720px}}
