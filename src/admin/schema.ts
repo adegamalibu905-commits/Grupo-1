@@ -235,7 +235,12 @@ export const CATEGORIES: Category[] = [
       { id: "caution", icon: "⚠️", title: "“Cuidado!” (carrossel de depoimentos)", where: "Seção com depoimentos que passam um por vez, com setas.", sec: "caution", toggle: "caution", roots: ["caution"], kw: "cuidado carrossel depoimentos setas",
         fields: [G("Título", [T("caution.title", "Primeira linha"), T("caution.title2", "Segunda linha")]),
           { t: "list", k: "caution.items", label: "Depoimentos do carrossel", add: "Adicionar depoimento", titleKey: "name",
-            of: [I("image", "Foto"), A("text", "Depoimento", BOLD, 5), T("name", "Nome"), T("role", "Resultado")] }] },
+            of: [
+              N("Escolha UM formato: só foto (aparece redonda) ou vídeo (YouTube, Vimeo ou .mp4). Se preencher o link do vídeo, ele aparece no lugar da foto."),
+              I("image", "Foto", "Usada quando não há vídeo. Se houver vídeo e a capa abaixo estiver vazia, esta imagem vira a capa dele."),
+              { t: "video", k: "video", label: "Link do vídeo (opcional)", help: "Cole o endereço do YouTube, Vimeo ou de um arquivo .mp4. Deixe vazio para mostrar só a foto." },
+              I("poster", "Capa do vídeo (opcional)", "Imagem exibida antes de o visitante apertar o play."),
+              A("text", "Depoimento", BOLD, 5), T("name", "Nome"), T("role", "Resultado")] }] },
       { id: "placa", icon: "🏅", title: "Receba a Placa OBA", where: "Seção sobre a placa de primeiro lugar, com vídeo ou imagem.", sec: "placa", toggle: "placa", roots: ["placa"], kw: "placa oba primeiro lugar honraria vídeo",
         fields: [T("placa.title", "Título"), { t: "list", k: "placa.paragraphs", label: "Parágrafos", add: "Adicionar parágrafo", of: "rich", help: BOLD },
           { t: "video", k: "placa.videoUrl", label: "Link do vídeo (opcional)", help: "Se vazio, mostra só a imagem abaixo." }, I("placa.image", "Imagem", "Se houver vídeo, vira a capa dele.")] },
