@@ -76,6 +76,57 @@ function ImageInput({ value, onChange }: { value: string; onChange: (s: string) 
   );
 }
 
+const MAX_VIDEO = 50 * 1024 * 1024; // 50 MB
+
+function VideoInput({ value, onChange }: { value: string; onChange: (s: string) => void }) {
+  const [busy, setBusy] = useState(false), [pct, setPct] = useState(0), [err, setErr] = useState("");
+  const cb = useRef(onChange);
+  cb.current = onChange; // sempre usa a versão mais nova (não perde o que você digitar durante o envio)
+  const v = (value || "").trim();
+  const kind = !v ? "" : /youtu\.?be|vimeo\.com/i.test(v) ? "link" : "file";
+
+  const send = async (f?: File) => {
+    if (!f) return;
+    setErr("");
+    const type = f.type || (/\.(mp4|m4v)$/i.test(f.name) ? "video/mp4" : /\.webm$/i.test(f.name) ? "video/webm" : /\.mov$/i.test(f.name) ? "video/quicktime" : "");
+    if (!type.startsWith("video/")) { setErr("Escolha um arquivo de vídeo (mp4, mov ou webm)."); return; }
+    if (f.size > MAX_VIDEO) { setErr("Esse vídeo passa de 50 MB. Suba no YouTube (como “não listado”) e cole o link aqui em cima."); return; }
+    setBusy(true); setPct(0);
+    try {
+      const r = await fetch("/api/admin/upload", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: f.name, type, size: f.size }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || "Não foi possível preparar o envio.");
+      await new Promise<void>((ok, bad) => {
+        const x = new XMLHttpRequest();
+        x.open("PUT", j.uploadUrl);
+        x.setRequestHeader("Content-Type", type);
+        if (j.apikey) x.setRequestHeader("apikey", j.apikey);
+        x.upload.onprogress = (e) => { if (e.lengthComputable) setPct(Math.round((e.loaded / e.total) * 100)); };
+        x.onload = () => (x.status >= 200 && x.status < 300 ? ok() : bad(new Error(`O envio falhou (${x.status}). ${String(x.responseText).slice(0, 140)}`)));
+        x.onerror = () => bad(new Error("A internet caiu durante o envio. Tente de novo."));
+        x.send(f);
+      });
+      cb.current(j.publicUrl);
+    } catch (e) { setErr((e as Error).message); }
+    setBusy(false);
+  };
+
+  return (
+    <div className="img">
+      <input className="in" placeholder="Cole o link do YouTube aqui…" value={value ?? ""} onChange={(e) => onChange(e.target.value)} />
+      <div className="imgact">
+        <label className="btn2 pri">{busy ? `Enviando… ${pct}%` : "📤 Enviar vídeo do celular"}
+          <input type="file" accept="video/*" hidden disabled={busy} onChange={(e) => { send(e.target.files?.[0]); e.target.value = ""; }} /></label>
+        {v && !busy && <button type="button" className="btn2 dng" onClick={() => onChange("")}>Remover vídeo</button>}
+      </div>
+      {busy && <div style={{ height: 8, borderRadius: 6, background: "#e5e7eb", overflow: "hidden", marginTop: 8 }}><div style={{ height: "100%", width: `${pct}%`, background: "#2563eb", transition: "width .2s" }} /></div>}
+      {!busy && kind === "link" && <div className="fh">✔ Link do YouTube/Vimeo reconhecido.</div>}
+      {!busy && kind === "file" && <div className="fh">✔ Arquivo de vídeo pronto (o visitante assiste direto no site).</div>}
+      {err && <div className="ferr">{err}</div>}
+    </div>
+  );
+}
+
 function LinkInput({ value, onChange, presets }: { value: string; onChange: (s: string) => void; presets?: [string, string][] }) {
   const ps = presets ?? [];
   const match = ps.find((p) => p[0] === (value ?? ""));
@@ -199,7 +250,7 @@ export function Fields({ fields, base, onBase }: { fields: Field[]; base: any; o
           case "area": return <Box key={n} label={f.label} help={f.help}><textarea className="in" rows={f.rows ?? 3} value={v ?? ""} onChange={(e) => set(e.target.value)} /></Box>;
           case "rich": return <Box key={n} label={f.label} help={f.help}><RichInput rows={f.rows} value={v ?? ""} onChange={set} /></Box>;
           case "image": return <Box key={n} label={f.label} help={f.help}><ImageInput value={v ?? ""} onChange={set} /></Box>;
-          case "video": return <Box key={n} label={f.label} help={f.help}><input className="in" placeholder="https://www.youtube.com/watch?v=…" value={v ?? ""} onChange={(e) => set(e.target.value)} /></Box>;
+          case "video": return <Box key={n} label={f.label} help={f.help}><VideoInput value={v ?? ""} onChange={set} /></Box>;
           case "link": return <Box key={n} label={f.label} help={f.help}><LinkInput value={v ?? ""} onChange={set} presets={f.presets} /></Box>;
           case "color": return (
             <Box key={n} label={f.label} help={f.help}>
