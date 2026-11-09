@@ -1,173 +1,316 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { DEFAULT_CONTENT } from "@/config/site";
+import { ALL_PAGES, CATEGORIES, catOf, coveredPaths, getIn, pageById, setIn, type Page } from "@/admin/schema";
+import { Fields, Toggle } from "@/admin/fields";
+import "./admin.css";
 
-const L: Record<string, string> = {
-  settings: "⚙️ Geral (marca, WhatsApp, SEO, rodapé)", theme: "🎨 Cores do site", sections: "📑 Seções (ordem e visibilidade)",
-  hero: "Topo / Título", video: "Vídeo e botões", plans: "Planos e preços", renew: "Renovação ex-alunos", what: "O que é a Mentoria",
-  redacao: "Correção de redações CFO", receive: "O que você irá receber + vídeo", basico: "Afinal, o que é fazer o básico", caution: "Cuidado! (carrossel)", placa: "Receba a Placa OBA", origin: "De onde surgiu o Método", forwho: "Para quem é", results: "Galeria de aprovados", testimonials: "Depoimentos", mentor: "Mentor",
-  summary: "Resumindo + garantia", benefits: "Benefícios da carreira", banner: "Faixa de destaque", faq: "Perguntas frequentes", final: "Chamada final",
-  brand: "Nome da marca", logo: "Logo (imagem)", metaTitle: "Título da aba (SEO)", metaDescription: "Descrição (SEO)", whatsapp: "WhatsApp (só números com DDI, ex: 5531999999999)",
-  whatsappText: "Mensagem inicial do WhatsApp", waLabel: "Cartão WhatsApp: rótulo", waTitle: "Cartão WhatsApp: título", waText: "Cartão WhatsApp: texto", waCta: "Cartão WhatsApp: chamada",
-  proof: "Prova social", guarantee: "Garantia (texto curto)", footerOwner: "Rodapé: nome após Copyright © ano", footerText: "Rodapé: frase final", footerSub: "Rodapé (linha 2, opcional)",
-  paragraphs: "Parágrafos (use **texto** para negrito)", list: "Lista (use **texto** para negrito)", lines: "Linhas", intro: "Introdução",
-  image1: "Foto 1", image2: "Foto 2", quote1Title: "Cartão 1: título", quote1Text: "Cartão 1: texto", quote2Title: "Cartão 2: título", quote2Text: "Cartão 2: texto",
-  proofTitle: "Título 'Não se convenceu?'", videoUrl: "Link do vídeo (YouTube, Vimeo ou .mp4)", sticker: "Figurinha/imagem (opcional)", payImage: "Imagem dos meios de pagamento (opcional)", payItems: "Meios de pagamento (texto)", avatars: "Fotos pequenas dos alunos (prova social)", spacer: "Espaço preto antes da seção (px; 56 ≈ 1,5 cm)", title2: "Título (2ª linha)",
-  bg: "Fundo", card: "Cartões", line: "Bordas", text: "Texto", muted: "Texto secundário", gold: "Dourado", goldLight: "Dourado claro", goldDark: "Dourado escuro",
-  blue: "Azul", blueLight: "Azul claro", blueDark: "Azul escuro", band: "Faixa azul", accent: "Destaque (amarelo)",
-  overline: "Texto pequeno acima", titleStart: "Título (início)", titleGold: "Título (destaque)", titleAccent: "Título (palavra colorida)", titleEnd: "Título (final)",
-  subtitle: "Subtítulo", support: "Texto de apoio", image: "Imagem", stats: "Números de destaque", n: "Número", l: "Legenda", title: "Título", url: "Link do vídeo (YouTube, Vimeo ou .mp4)",
-  poster: "Imagem de capa", buttons: "Botões", link: "Link (#planos, https://… )", note: "Observação", badges: "Selos", tracks: "Carreiras", sub: "Subtítulo/Ano",
-  colorTheme: "Cor da carreira (gold = dourado, blue = azul)", label: "Rótulo", name: "Nome", price: "2) Preço real cobrado, sem cupom (R$)", oldPrice: "1) Preço antigo, aparece riscado (R$, 0 = oculto)", featured: "Destacar (Mais escolhido)",
-  features: "Benefícios do plano", priceNote: "Texto abaixo do preço", cta: "Texto do botão", ribbon: "Etiqueta de destaque", receivesTitle: "Título 'Tudo que recebe'",
-  receives: "Itens recebidos", payNote: "Nota de pagamento", button: "Texto do botão", items: "Itens", icon: "Ícone/Emoji", t: "Título", d: "Descrição", q: "Pergunta", a: "Resposta",
-  images: "Imagens (URL ou envio)", role: "Cargo/Resultado", bullets: "Tópicos", guaranteeTitle: "Garantia: título", notFor: "Não é para quem", on: "Visível no site", id: "ID",
-};
-const lab = (k: string) => L[k] ?? k.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
-const isImg = (k: string) => /^(image\d*|images|logo|poster|foto|sticker|payImage|avatars)$/i.test(k);
-const isColor = (v: any, k: string) => typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v) && k !== "text";
-const uid = () => "n" + Date.now().toString(36);
-const blank = (v: any): any => Array.isArray(v) ? [] : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, k === "id" ? uid() : blank(x)])) : typeof v === "number" ? 0 : typeof v === "boolean" ? false : "";
-const title = (v: any, i: number) => typeof v === "string" ? v.slice(0, 50) || `Item ${i + 1}` : (Object.entries(v).find(([k, x]) => typeof x === "string" && k !== "id" && x && !/^#|^\/|^data:/.test(x as string))?.[1] as string)?.slice(0, 50) || `Item ${i + 1}`;
-
-function shrink(file: File): Promise<string> {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const s = Math.min(1, 1200 / Math.max(img.width, img.height)), cv = document.createElement("canvas");
-        cv.width = img.width * s; cv.height = img.height * s;
-        cv.getContext("2d")!.drawImage(img, 0, 0, cv.width, cv.height);
-        res(cv.toDataURL(file.type === "image/png" ? "image/png" : "image/jpeg", 0.82));
-      };
-      img.onerror = rej; img.src = r.result as string;
-    };
-    r.onerror = rej; r.readAsDataURL(file);
-  });
-}
-
-function Node({ k, v, set, fixed }: { k: string; v: any; set: (x: any) => void; fixed?: boolean }) {
-  if (k === "id" && !fixed) return null;
-  if (typeof v === "boolean") return <label className="r"><input type="checkbox" checked={v} onChange={(e) => set(e.target.checked)} /> {lab(k)}</label>;
-  if (typeof v === "number") return <div className="f"><label>{lab(k)}</label><input type="number" step="0.01" value={v} onChange={(e) => set(Number(e.target.value))} /></div>;
-  if (typeof v === "string") {
-    if (isImg(k)) return (
-      <div className="f"><label>{lab(k)}</label>
-        <div className="img">{v && <img src={v} alt="" />}
-          <input value={v.startsWith("data:") ? "(imagem enviada)" : v} readOnly={v.startsWith("data:")} placeholder="https://… ou envie um arquivo" onChange={(e) => set(e.target.value)} />
-          <label className="up">Enviar<input type="file" accept="image/*" hidden onChange={async (e) => { const f = e.target.files?.[0]; if (f) set(await shrink(f)); }} /></label>
-          {v && <button type="button" className="x" onClick={() => set("")}>limpar</button>}
-        </div></div>);
-    if (isColor(v, k)) return <div className="f"><label>{lab(k)}</label><div className="r"><input type="color" value={v} onChange={(e) => set(e.target.value)} /><input value={v} onChange={(e) => set(e.target.value)} /></div></div>;
-    const long = v.length > 60 || /^(text|d|a|subtitle|support|guarantee|metaDescription)$/.test(k);
-    return <div className="f"><label>{lab(k)}</label>{long ? <textarea rows={3} value={v} onChange={(e) => set(e.target.value)} /> : <input value={v} onChange={(e) => set(e.target.value)} />}</div>;
-  }
-  if (Array.isArray(v)) {
-    const fixedList = k === "sections";
-    const mv = (i: number, d: number) => { const a = [...v], j = i + d; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; set(a); };
-    const tpl = v[0] ?? "";
-    return (
-      <div className="f"><label>{lab(k)} <small>({v.length})</small></label>
-        {v.map((it, i) => (
-          <div className="it" key={i}>
-            <div className="ith"><b>{typeof it === "object" ? title(it, i) : ""}</b>
-              <span><button type="button" onClick={() => mv(i, -1)}>↑</button><button type="button" onClick={() => mv(i, 1)}>↓</button>
-                {!fixedList && <button type="button" className="x" onClick={() => confirm("Remover este item?") && set(v.filter((_: any, j: number) => j !== i))}>✕</button>}</span></div>
-            {typeof it === "object" ? <Node k="_" v={it} fixed={fixedList} set={(x) => set(v.map((o: any, j: number) => j === i ? x : o))} />
-              : <Node k={k} v={it} set={(x) => set(v.map((o: any, j: number) => j === i ? x : o))} />}
-          </div>))}
-        {!fixedList && <button type="button" className="add" onClick={() => set([...v, blank(tpl)])}>+ Adicionar</button>}
-      </div>);
-  }
-  if (v && typeof v === "object") {
-    const ent = Object.entries(v).filter(([kk]) => fixed || kk !== "id");
-    const oi = ent.findIndex(([kk]) => kk === "oldPrice"), pi = ent.findIndex(([kk]) => kk === "price");
-    if (oi > pi && pi >= 0) ent.splice(pi, 0, ent.splice(oi, 1)[0]);
-    return <div className={k === "_" ? "" : "grp"}>{k !== "_" && <h4>{lab(k)}</h4>}{ent.map(([kk, x]) => (
-      kk === "label" && fixed ? <div className="f" key={kk}><label>Seção</label><b>{String(x)}</b></div> :
-      kk === "id" ? null : <Node key={kk} k={kk} v={x} fixed={fixed} set={(n) => set({ ...v, [kk]: n })} />))}</div>;
-  }
-  return null;
-}
+const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+const MAX_BYTES = 6_000_000;
+const clone = <T,>(x: T): T => JSON.parse(JSON.stringify(x));
 
 export default function Admin() {
-  const [state, setState] = useState<"load" | "login" | "edit">("load");
+  const [phase, setPhase] = useState<"load" | "login" | "edit">("load");
   const [data, setData] = useState<any>(null);
-  const [u, setU] = useState(""); const [p, setP] = useState("");
-  const [msg, setMsg] = useState(""); const [dirty, setDirty] = useState(false); const [busy, setBusy] = useState(false);
+  const dataRef = useRef<any>(null);
+  const [pageId, setPageId] = useState("home");
+  const [q, setQ] = useState("");
+  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+  const [tab, setTab] = useState<"menu" | "edit" | "view">("menu");
+  const [changed, setChanged] = useState<Set<string>>(new Set());
+  const [toast, setToast] = useState<{ t: "ok" | "bad"; m: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [size, setSize] = useState(0);
+  const [u, setU] = useState(""); const [p, setP] = useState(""); const [lmsg, setLmsg] = useState("");
+  const [ready, setReady] = useState(0);
+  const [, force] = useState(0);
+  const frame = useRef<HTMLIFrameElement>(null);
+  const hist = useRef<{ past: any[]; future: any[]; at: number; pg: string }>({ past: [], future: [], at: 0, pg: "" });
+  const pend = useRef<Set<string>>(new Set());
+  const timer = useRef<any>(null);
+  const pageIdRef = useRef(pageId); pageIdRef.current = pageId;
 
-  const load = async () => {
+  const post = useCallback((m: any) => frame.current?.contentWindow?.postMessage(m, location.origin), []);
+
+  const load = useCallback(async () => {
     const r = await fetch("/api/admin/content", { cache: "no-store" });
-    if (r.status === 401) return setState("login");
-    setData(await r.json()); setState("edit");
-  };
-  useEffect(() => { load(); }, []);
-  useEffect(() => { const f = (e: BeforeUnloadEvent) => { if (dirty) e.preventDefault(); }; addEventListener("beforeunload", f); return () => removeEventListener("beforeunload", f); }, [dirty]);
+    if (r.status === 401) return setPhase("login");
+    const d = await r.json(); dataRef.current = d; setData(d); setPhase("edit");
+  }, []);
+  useEffect(() => { load(); try { const d = localStorage.getItem("adm-device"); if (d === "mobile" || d === "desktop") setDevice(d); } catch { /* ok */ } }, [load]);
+  useEffect(() => { try { localStorage.setItem("adm-device", device); } catch { /* ok */ } }, [device]);
+
+  // ---- aviso de alterações não salvas
+  useEffect(() => {
+    const f = (e: BeforeUnloadEvent) => { if (changed.size) { e.preventDefault(); e.returnValue = ""; } };
+    addEventListener("beforeunload", f); return () => removeEventListener("beforeunload", f);
+  }, [changed]);
+
+  // ---- tamanho do conteúdo
+  useEffect(() => { if (!data) return; const t = setTimeout(() => setSize(JSON.stringify(data).length), 500); return () => clearTimeout(t); }, [data]);
+
+  // ---- toast some sozinho
+  useEffect(() => { if (toast?.t === "ok") { const t = setTimeout(() => setToast(null), 6000); return () => clearTimeout(t); } }, [toast]);
+
+  // ---- prévia: mensagens vindas do iframe
+  useEffect(() => {
+    const on = (e: MessageEvent) => {
+      if (e.origin !== location.origin || e.source !== frame.current?.contentWindow) return;
+      const m = e.data; if (!m || typeof m !== "object") return;
+      if (m.type === "ready") { if (dataRef.current) post({ type: "full", data: dataRef.current }); setReady((n) => n + 1); }
+      if (m.type === "select") {
+        const pg = ALL_PAGES.find((x) => x.sec === m.id) ?? ALL_PAGES.find((x) => x.toggle === m.id);
+        if (pg) { setPageId(pg.id); setTab("edit"); }
+        else if (m.id === "wa") { setPageId("whatsapp"); setTab("edit"); }
+      }
+      if (m.type === "checkoutClosed" && pageById(pageIdRef.current)?.view === "checkout") post({ type: "checkout", open: true });
+    };
+    addEventListener("message", on); return () => removeEventListener("message", on);
+  }, [post]);
+
+  // ---- prévia: acompanha a tela que está sendo editada
+  useEffect(() => {
+    if (phase !== "edit") return;
+    const pg = pageById(pageId);
+    if (!pg) { post({ type: "view", view: "site" }); post({ type: "checkout", open: false }); post({ type: "focus", id: "" }); return; }
+    post({ type: "view", view: pg.view === "thanks" ? "thanks" : "site" });
+    post({ type: "checkout", open: pg.view === "checkout" });
+    post({ type: "focus", id: pg.view ? "" : pg.sec ?? "", label: pg.title, delay: pg.view === "thanks" ? 250 : 80 });
+  }, [pageId, phase, ready, post]);
+
+  const flush = useCallback(() => {
+    const keys = Array.from(pend.current); pend.current.clear();
+    for (const k of keys) post({ type: "patch", key: k, value: dataRef.current[k] });
+    if (keys.includes("sections")) { const pg = pageById(pageIdRef.current); if (pg && !pg.view) post({ type: "focus", id: pg.sec ?? "", label: pg.title, delay: 200 }); }
+  }, [post]);
+
+  const commit = useCallback((next: any, opts?: { keepHist?: boolean }) => {
+    const prev = dataRef.current; if (!next || next === prev) return;
+    if (!opts?.keepHist) {
+      const h = hist.current, now = Date.now();
+      if (!(now - h.at < 900 && h.pg === pageIdRef.current && h.past.length)) { h.past.push(prev); if (h.past.length > 60) h.past.shift(); }
+      h.at = now; h.pg = pageIdRef.current; h.future = [];
+    }
+    dataRef.current = next; setData(next);
+    for (const k of Object.keys(next)) if (next[k] !== prev[k]) pend.current.add(k);
+    clearTimeout(timer.current); timer.current = setTimeout(flush, 110);
+    setChanged((c) => (c.has(pageIdRef.current) ? c : new Set(c).add(pageIdRef.current)));
+  }, [flush]);
+
+  const undo = () => { const h = hist.current; const prev = h.past.pop(); if (!prev) return; h.future.push(dataRef.current); h.at = 0; commit(prev, { keepHist: true }); force((n) => n + 1); };
+  const redo = () => { const h = hist.current; const nx = h.future.pop(); if (!nx) return; h.past.push(dataRef.current); h.at = 0; commit(nx, { keepHist: true }); force((n) => n + 1); };
 
   async function login(e: React.FormEvent) {
-    e.preventDefault(); setBusy(true); setMsg("");
+    e.preventDefault(); setBusy(true); setLmsg("");
     const r = await fetch("/api/admin/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ user: u, pass: p }) });
     setBusy(false);
-    if (!r.ok) return setMsg((await r.json()).error || "Erro");
+    if (!r.ok) return setLmsg((await r.json().catch(() => ({}))).error || "Não foi possível entrar");
     setP(""); load();
   }
-  async function save() {
-    setBusy(true); setMsg("");
-    const r = await fetch("/api/admin/content", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+  const save = useCallback(async () => {
+    if (busy || !dataRef.current) return;
+    setBusy(true); setToast(null);
+    try {
+      const r = await fetch("/api/admin/content", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dataRef.current) });
+      if (r.ok) { setChanged(new Set()); setToast({ t: "ok", m: "Publicado! O site já está atualizado." }); }
+      else setToast({ t: "bad", m: (await r.json().catch(() => ({}))).error || "Não foi possível salvar. Tente de novo." });
+    } catch { setToast({ t: "bad", m: "Sem conexão. Suas alterações continuam aqui; tente salvar de novo." }); }
     setBusy(false);
-    if (r.ok) { setDirty(false); setMsg("✓ Salvo! O site já está atualizado."); } else setMsg("⚠ " + ((await r.json()).error || "Erro ao salvar"));
+  }, [busy]);
+  useEffect(() => {
+    const k = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") { e.preventDefault(); save(); } };
+    addEventListener("keydown", k); return () => removeEventListener("keydown", k);
+  }, [save]);
+  async function logout() {
+    if (changed.size && !confirm("Existem alterações que ainda não foram salvas. Sair mesmo assim?")) return;
+    await fetch("/api/admin/login", { method: "DELETE" }); setData(null); setChanged(new Set()); setPhase("login");
   }
-  async function logout() { await fetch("/api/admin/login", { method: "DELETE" }); setData(null); setState("login"); }
 
-  if (state === "load") return <div className="ad"><style>{CSS}</style><p style={{ padding: 30 }}>Carregando…</p></div>;
-  if (state === "login") return (
-    <div className="ad"><style>{CSS}</style>
+  const go = (id: string) => { setPageId(id); setTab("edit"); };
+  const page = pageById(pageId);
+  const cat = page ? catOf(page.id) : undefined;
+  const hits = useMemo(() => {
+    const s = norm(q.trim()); if (!s) return null;
+    return ALL_PAGES.filter((x) => norm(`${x.title} ${x.kw} ${x.where} ${catOf(x.id)?.title ?? ""}`).includes(s));
+  }, [q]);
+
+  const resetPage = (pg: Page) => {
+    if (!pg.fields) return;
+    if (!confirm(`Voltar tudo da tela “${pg.title}” para o texto original que veio com o site?\n\nVocê poderá desfazer com o botão “Desfazer”.`)) return;
+    let n = dataRef.current;
+    for (const path of Array.from(coveredPaths(pg.fields)).filter((x) => !x.includes("[]."))) { const d = getIn(DEFAULT_CONTENT, path); if (d !== undefined) n = setIn(n, path, clone(d)); }
+    commit(n);
+  };
+
+  // ============ LOGIN ============
+  if (phase === "load") return <div className="ad center"><p className="loading">Carregando o painel…</p></div>;
+  if (phase === "login") return (
+    <div className="ad center">
       <form className="login" onSubmit={login}>
-        <h1>Painel administrativo</h1><p>Entre para editar o site.</p>
-        <label>Nome</label><input autoFocus autoComplete="username" value={u} onChange={(e) => setU(e.target.value)} />
-        <label>Senha</label><input type="password" autoComplete="current-password" value={p} onChange={(e) => setP(e.target.value)} />
-        {msg && <div className="msg bad">{msg}</div>}
-        <button className="save" disabled={busy || !u || !p}>{busy ? "Entrando…" : "Entrar"}</button>
+        <div className="lg">🛠️</div>
+        <h1>Painel do site</h1>
+        <p>Entre para editar textos, fotos, preços e cores do seu site.</p>
+        <label>Seu nome de usuário</label><input autoFocus autoComplete="username" value={u} onChange={(e) => setU(e.target.value)} />
+        <label>Sua senha</label><input type="password" autoComplete="current-password" value={p} onChange={(e) => setP(e.target.value)} />
+        {lmsg && <div className="lerr">⚠ {lmsg}</div>}
+        <button className="savebtn" disabled={busy || !u || !p}>{busy ? "Entrando…" : "Entrar no painel"}</button>
       </form>
     </div>);
-  const order = ["sections", "settings", "theme", "hero", "video", "plans", "renew", "what", "redacao", "forwho", "receive", "summary", "basico", "results", "testimonials", "caution", "placa", "origin", "mentor", "benefits", "banner", "faq", "final"];
-  const keys = [...order.filter((k) => k in data), ...Object.keys(data).filter((k) => !order.includes(k))];
+
+  const pct = Math.min(100, Math.round((size / MAX_BYTES) * 100));
+  const dirty = changed.size > 0;
+  const h = hist.current;
+
   return (
-    <div className="ad"><style>{CSS}</style>
-      <header><b>Painel · editar site</b><span><a href="/" target="_blank" rel="noreferrer">Ver site ↗</a><button onClick={logout}>Sair</button></span></header>
-      <main>
-        <p className="hint">Abra cada bloco, edite e clique em <b>Salvar alterações</b>. Tudo do site é editável: textos, imagens, cores, preços, links, ordem e visibilidade das seções.</p>
-        {keys.map((k) => (
-          <details key={k} className="blk"><summary>{L[k] ?? lab(k)}</summary>
-            <Node k="_" v={data[k]} fixed={k === "sections"} set={(x) => { setData({ ...data, [k]: x }); setDirty(true); setMsg(""); }} />
-          </details>))}
-      </main>
-      <footer><span className={msg.startsWith("⚠") ? "bad" : "ok"}>{msg || (dirty ? "Alterações não salvas" : "")}</span><button className="save" disabled={busy || !dirty} onClick={save}>{busy ? "Salvando…" : "Salvar alterações"}</button></footer>
-    </div>);
+    <div className={`ad app tab-${tab}`}>
+      {/* ===== BARRA DE CIMA ===== */}
+      <header className="top">
+        <button className="brand" onClick={() => go("home")}>🛠️ <b>Painel do site</b></button>
+        <div className="tmid">
+          <button className="tb" onClick={undo} disabled={!h.past.length} title="Desfaz a última alteração">↶ Desfazer</button>
+          <button className="tb" onClick={redo} disabled={!h.future.length} title="Refaz o que foi desfeito">↷ Refazer</button>
+          <span className={`stat ${dirty ? "d" : "k"}`}>{dirty ? "● Alterações ainda não publicadas" : "✓ Tudo publicado"}</span>
+        </div>
+        <div className="tright">
+          <a className="tb" href="/" target="_blank" rel="noreferrer">Ver site publicado ↗</a>
+          <button className="tb" onClick={logout}>Sair</button>
+          <button className="savebtn" disabled={busy || !dirty} onClick={save} title="Atalho: Ctrl + S">{busy ? "Publicando…" : "💾 Salvar e publicar"}</button>
+        </div>
+      </header>
+
+      {toast && <div className={`toast ${toast.t}`} role="status">{toast.t === "ok" ? "✓ " : "⚠ "}{toast.m}{toast.t === "ok" && <a href="/" target="_blank" rel="noreferrer"> Abrir o site ↗</a>}<button onClick={() => setToast(null)} aria-label="Fechar">✕</button></div>}
+
+      <nav className="tabs">
+        {(["menu", "edit", "view"] as const).map((t) => <button key={t} className={tab === t ? "on" : ""} onClick={() => setTab(t)}>{t === "menu" ? "📂 Menu" : t === "edit" ? "✏️ Editar" : "👁 Ver site"}</button>)}
+      </nav>
+
+      <div className="shell">
+        {/* ===== MENU ===== */}
+        <aside className="menu">
+          <input className="search" placeholder="🔍 Buscar (ex.: preço, WhatsApp, cor)" value={q} onChange={(e) => setQ(e.target.value)} />
+          <button className={`mi home ${pageId === "home" ? "on" : ""}`} onClick={() => { setQ(""); go("home"); }}>🏠 Início e ajuda</button>
+          {hits ? (
+            <div className="cat"><div className="ch">Resultados ({hits.length})</div>
+              {hits.map((x) => <button key={x.id} className={`mi ${pageId === x.id ? "on" : ""}`} onClick={() => { setQ(""); go(x.id); }}><i>{x.icon}</i><span>{x.title}<small>{catOf(x.id)?.title}</small></span></button>)}
+              {!hits.length && <p className="none">Nada encontrado. Tente outra palavra.</p>}
+            </div>
+          ) : CATEGORIES.map((c) => (
+            <div className="cat" key={c.id}>
+              <div className="ch"><i>{c.icon}</i> {c.title}</div>
+              {c.pages.map((x) => {
+                const off = x.toggle && data.sections.find((s: any) => s.id === x.toggle)?.on === false;
+                return (
+                  <button key={x.id} className={`mi ${pageId === x.id ? "on" : ""}`} onClick={() => go(x.id)}>
+                    <i>{x.icon}</i><span>{x.title}</span>
+                    {changed.has(x.id) && <em className="dot" title="Alterado e ainda não publicado">●</em>}
+                    {off && <em className="off" title="Esta seção está desligada no site">oculta</em>}
+                  </button>);
+              })}
+            </div>
+          ))}
+        </aside>
+
+        {/* ===== EDITOR ===== */}
+        <section className="editor">
+          {pageId === "home" || !page ? <Home go={go} /> : (
+            <>
+              <div className="phead">
+                <div className="crumb"><button onClick={() => go("home")}>Início</button> › <span>{cat?.icon} {cat?.title}</span> › <b>{page.title}</b></div>
+                <h2><span>{page.icon}</span> {page.title}</h2>
+                <div className="where"><b>📍 Onde aparece no site:</b> {page.where}</div>
+                <div className="pact">
+                  {(page.sec || page.view) && <button className="tb" onClick={() => { setTab("view"); post({ type: "focus", id: page.view ? "" : page.sec, label: page.title }); }}>👁 Mostrar no site</button>}
+                  {page.fields && <button className="tb" onClick={() => resetPage(page)}>↺ Voltar ao texto original</button>}
+                </div>
+                {page.toggle && (() => {
+                  const sec = data.sections.find((s: any) => s.id === page.toggle);
+                  if (!sec) return null;
+                  return sec.on
+                    ? <div className="vis"><Toggle on label="Esta seção está aparecendo no site" onChange={() => commit({ ...dataRef.current, sections: dataRef.current.sections.map((s: any) => (s.id === sec.id ? { ...s, on: false } : s)) })} /></div>
+                    : <div className="note warn vis">⚠️ Esta seção está <b>desligada</b> e por isso não aparece no site nem na prévia. <button className="tb pri" onClick={() => commit({ ...dataRef.current, sections: dataRef.current.sections.map((s: any) => (s.id === sec.id ? { ...s, on: true } : s)) })}>Ligar agora</button></div>;
+                })()}
+              </div>
+              <div className="pbody">
+                {page.custom === "sections"
+                  ? <SectionsEditor data={data} commit={commit} go={(id) => { const pg = ALL_PAGES.find((x) => x.toggle === id); if (pg) go(pg.id); }} show={(id) => { setTab("view"); post({ type: "focus", id, label: data.sections.find((s: any) => s.id === id)?.label }); }} />
+                  : page.fields && <Fields fields={page.fields} base={data} onBase={(nb) => commit(nb)} />}
+              </div>
+            </>
+          )}
+        </section>
+
+        {/* ===== PRÉVIA ===== */}
+        <section className="viewer">
+          <div className="vbar">
+            <b>👁 Como o site está ficando</b>
+            <span className="vmode">
+              <button className={device === "desktop" ? "on" : ""} onClick={() => setDevice("desktop")}>🖥 Computador</button>
+              <button className={device === "mobile" ? "on" : ""} onClick={() => setDevice("mobile")}>📱 Celular</button>
+            </span>
+            <span className="vtip">Clique em qualquer parte do site para editar</span>
+          </div>
+          <div className="vframe"><div className={`vdev ${device}`}><iframe ref={frame} src="/preview" title="Prévia do site" /></div></div>
+          <div className="vfoot">
+            <span>Tamanho do conteúdo: <b>{(size / 1e6).toFixed(2)} MB</b> de 6 MB</span>
+            <i className="bar"><u style={{ width: pct + "%" }} className={pct > 85 ? "hot" : ""} /></i>
+            {pct > 85 && <span className="warn">Quase no limite. Use fotos menores.</span>}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
 }
 
-const CSS = `
-.ad{min-height:100vh;background:#0b0b0d;color:#eee;font:15px system-ui,sans-serif;padding-bottom:90px}
-.ad *{box-sizing:border-box}.ad header{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#111114;border-bottom:1px solid #26262c}
-.ad header span{display:flex;gap:12px;align-items:center}.ad header a{color:#c8a86a}
-.ad button{font:inherit;cursor:pointer}.ad header button{background:none;border:1px solid #444;color:#ddd;border-radius:6px;padding:6px 12px}
-.ad main{max-width:760px;margin:0 auto;padding:16px}.hint{color:#9a9aa5;font-size:13px;margin-bottom:14px}
-.blk{background:#131316;border:1px solid #26262c;border-radius:12px;margin-bottom:10px}.blk>summary{padding:14px 16px;cursor:pointer;font-weight:600}
-.blk[open]>summary{border-bottom:1px solid #26262c;color:#c8a86a}.blk>div{padding:14px 16px}
-.f{margin-bottom:14px}.f>label,.login label{display:block;font-size:12px;color:#a9a9b4;margin-bottom:5px}
-.ad input:not([type=checkbox]):not([type=color]),.ad textarea{width:100%;background:#0b0b0d;border:1px solid #33333b;border-radius:8px;color:#fff;padding:10px;font:inherit}
-.ad input:focus,.ad textarea:focus{outline:2px solid #c8a86a;border-color:transparent}
-.r{display:flex;align-items:center;gap:10px;margin-bottom:10px}.r input[type=color]{width:44px;height:38px;border:0;background:none;padding:0}
-.grp{border-left:2px solid #2d2a20;padding-left:12px;margin:6px 0 14px}.grp h4{font-size:13px;color:#c8a86a;margin-bottom:10px}
-.it{border:1px solid #2a2a31;border-radius:10px;padding:12px;margin-bottom:10px;background:#0f0f12}
-.ith{display:flex;justify-content:space-between;gap:8px;margin-bottom:10px;font-size:13px}.ith span{display:flex;gap:4px;flex:none}
-.ith button,.x{background:#1c1c21;border:1px solid #38383f;color:#ddd;border-radius:6px;padding:3px 9px}.x{color:#ff7a8f}
-.add{width:100%;background:none;border:1px dashed #555;color:#c8a86a;border-radius:8px;padding:10px}
-.img{display:grid;gap:8px}.img img{max-height:120px;max-width:100%;border-radius:8px;object-fit:contain;justify-self:start;border:1px solid #33333b;background:#000}
-.up{display:inline-block;justify-self:start;background:#1c1c21;border:1px solid #38383f;border-radius:6px;padding:7px 14px;cursor:pointer;color:#ddd!important;font-size:13px!important;margin:0!important}
-.ad footer{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;background:#111114;border-top:1px solid #26262c}
-.save{background:linear-gradient(180deg,#e2cb97,#9c7f47);color:#16110a;border:0;border-radius:8px;padding:12px 20px;font-weight:700}.save:disabled{opacity:.45}
-.ok{color:#2fbf71}.bad{color:#ff7a8f}.msg{margin:10px 0}
-.login{max-width:360px;margin:12vh auto 0;padding:26px;background:#131316;border:1px solid #26262c;border-radius:16px}.login h1{font-size:22px;margin-bottom:4px}.login p{color:#9a9aa5;margin-bottom:18px}.login input{margin-bottom:14px}.login .save{width:100%;margin-top:6px}
-`;
+function Home({ go }: { go: (id: string) => void }) {
+  return (
+    <div className="home">
+      <h2>👋 Bem-vindo ao painel do seu site</h2>
+      <p className="lead">Aqui você muda tudo do site sem mexer em código. Do lado direito você vê a página sendo alterada na hora.</p>
+      <div className="steps">
+        <div><b>1</b><span>Escolha o que quer mudar no <u>menu da esquerda</u>.</span></div>
+        <div><b>2</b><span>Edite os campos. A <u>prévia à direita</u> mostra o resultado e destaca onde você está mexendo.</span></div>
+        <div><b>3</b><span>Gostou? Clique em <u>Salvar e publicar</u>, no canto de cima.</span></div>
+      </div>
+      <div className="note info">💡 Dica: clique direto em qualquer parte do site, na prévia, para abrir a tela de edição daquela parte.</div>
+      <h3>O que você quer fazer?</h3>
+      <div className="quick">
+        {[["planos-precos", "💵", "Mudar preços dos planos"], ["whatsapp", "💬", "Trocar o WhatsApp"], ["hero", "🏁", "Mudar o título principal"], ["ordem", "📑", "Mudar ordem das seções"], ["cores", "🎨", "Mudar as cores"], ["coupons", "🎟️", "Criar um cupom"]].map(([id, ic, t]) => (
+          <button key={id} onClick={() => go(id)}><i>{ic}</i>{t}</button>))}
+      </div>
+      <h3>Tudo o que dá para editar</h3>
+      <div className="cards">
+        {CATEGORIES.map((c) => (
+          <div className="card" key={c.id}>
+            <h4><i>{c.icon}</i> {c.title}</h4><p>{c.desc}</p>
+            <div>{c.pages.map((x) => <button key={x.id} onClick={() => go(x.id)}>{x.icon} {x.title}</button>)}</div>
+          </div>))}
+      </div>
+    </div>
+  );
+}
+
+function SectionsEditor({ data, commit, go, show }: { data: any; commit: (d: any) => void; go: (id: string) => void; show: (id: string) => void }) {
+  const list: { id: string; label: string; on: boolean }[] = data.sections;
+  const set = (a: typeof list) => commit({ ...data, sections: a });
+  const mv = (i: number, d: number) => { const j = i + d; if (j < 0 || j >= list.length) return; const a = [...list]; [a[i], a[j]] = [a[j], a[i]]; set(a); };
+  return (
+    <>
+      <div className="note info">ℹ️ A lista abaixo é a página de cima para baixo. Use as setas para mudar a ordem e o interruptor para mostrar ou esconder cada parte.</div>
+      <div className="slist">
+        {list.map((s, i) => (
+          <div key={s.id} className={`srow ${s.on ? "" : "off"}`}>
+            <span className="sn">{i + 1}</span>
+            <span className="sl"><b>{s.label}</b>{!s.on && <small>Desligada — não aparece no site</small>}</span>
+            <span className="sa">
+              <Toggle on={s.on} label="" onChange={(v) => set(list.map((x, j) => (j === i ? { ...x, on: v } : x)))} />
+              <button className="tb" onClick={() => mv(i, -1)} disabled={i === 0} title="Subir">↑</button>
+              <button className="tb" onClick={() => mv(i, 1)} disabled={i === list.length - 1} title="Descer">↓</button>
+              <button className="tb" onClick={() => show(s.id)} title="Mostrar na prévia">👁</button>
+              <button className="tb" onClick={() => go(s.id)} title="Editar o conteúdo">✏️</button>
+            </span>
+          </div>))}
+      </div>
+    </>
+  );
+}
