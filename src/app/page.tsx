@@ -7,10 +7,15 @@ import CountUp from "@/components/CountUp";
 import VideoBox from "@/components/VideoBox";
 import WhatsAppWidget from "@/components/WhatsAppWidget";
 import Rich from "@/components/Rich";
+import Carousel from "@/components/Carousel";
 import "@/components/sections.css";
+import "@/components/newsections.css";
 
 export const dynamic = "force-dynamic";
 const st = (i: number) => ({ "--i": i } as React.CSSProperties);
+const Check = () => (
+  <svg viewBox="0 0 32 32" aria-hidden><path d="M3 17.5l8.2 8.2L29 6.5" fill="none" stroke="#ffd400" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+);
 
 export default async function Home() {
   const c = await getContent();
@@ -79,17 +84,32 @@ export default async function Home() {
         ))}</div>
       </div></section></Reveal>
     ),
-    steps: () => (
-      <Reveal><section className="sec"><div className="wrap">
-        <h2 className="h2 center">{c.steps.title}</h2>
-        <p className="muted center">{c.steps.subtitle}</p>
-        <div className="steps">{c.steps.items.map((x, i) => <div className="step st" style={st(i)} key={i}><h3>{x.t}</h3><p className="muted">{x.d}</p></div>)}</div>
+    redacao: () => (
+      <Reveal><section className="ns ns-black ns-red"><div className="ns-in ns-center">
+        <h2 className="ns-h">{c.redacao.title}</h2>
+        <p><Rich text={c.redacao.intro} /></p>
+        <div className="ns-lines">{c.redacao.lines.map((l, i) => <p key={i}><Rich text={l} /></p>)}</div>
+        <p><Rich text={c.redacao.note} /></p>
       </div></section></Reveal>
     ),
     forwho: () => (
-      <Reveal><section className="sec brown"><div className="wrap">
-        <h2 className="h2 center">{c.forwho.title} <span className="gold">{c.forwho.titleGold}</span> {c.forwho.titleEnd}</h2>
-        <ul className="tick">{c.forwho.items.map((x, i) => <li className="st" style={st(i)} key={i}>{x}</li>)}</ul>
+      <Reveal><section className="ns ns-brown"><div className="ns-in">
+        <h2 className="ns-h">{c.forwho.title}</h2>
+        <div className="ns-brule" />
+        <ul className="ns-ticks">{c.forwho.list.map((x, i) => <li key={i}><Check /><span><Rich text={x} /></span></li>)}</ul>
+        {c.forwho.image1 && <div className="ns-photo"><img src={c.forwho.image1} alt="" /></div>}
+        <div className="ns-qcard"><h3>{c.forwho.quote1Title}</h3><p><Rich text={c.forwho.quote1Text} /></p></div>
+        <a className="btn btn-gold ns-cta" href={c.forwho.link}><span>{c.forwho.button}</span><i>→</i></a>
+        {c.forwho.image2 && <div className="ns-photo"><img src={c.forwho.image2} alt="" /></div>}
+        <div className="ns-qcard"><h3>{c.forwho.quote2Title}</h3><p><Rich text={c.forwho.quote2Text} /></p></div>
+      </div></section></Reveal>
+    ),
+    receive: () => (
+      <Reveal><section className="ns ns-light"><div className="ns-in">
+        <div className="ns-box"><h2 className="ns-h">{c.receive.title}</h2></div>
+        {c.receive.paragraphs.map((t, i) => <p key={i}><Rich text={t} /></p>)}
+        <div className="ns-box" style={{ marginTop: 34 }}><h2 className="ns-h" style={{ fontSize: "clamp(22px,5.6vw,30px)" }}>{c.receive.proofTitle}</h2></div>
+        {(c.receive.videoUrl || c.receive.poster) && <VideoBox url={c.receive.videoUrl} poster={c.receive.poster} />}
       </div></section></Reveal>
     ),
     results: () => {
@@ -130,12 +150,55 @@ export default async function Home() {
       </div></div></section></Reveal>
     ),
     summary: () => (
-      <Reveal><section className="sec white"><div className="wrap"><div className="narrow">
-        <h2 className="h2 center">{c.summary.title}</h2>
-        <p className="muted">{c.summary.text}</p>
-        <p style={{ marginTop: 14 }}><b>{c.summary.guaranteeTitle}</b> {c.summary.guarantee}</p>
-        <ul className="tick nolist" style={{ marginTop: 22 }}>{c.summary.notFor.map((x, i) => <li className="st" style={st(i)} key={i}>{x}</li>)}</ul>
-      </div></div></section></Reveal>
+      <Reveal><section className="ns ns-light" style={{ paddingTop: 0 }}><div className="ns-in">
+        <div className="ns-sum">
+          <h2 className="ns-h">{c.summary.title}</h2>
+          <p><Rich text={c.summary.text} /></p>
+          <p><b>{c.summary.guaranteeTitle}</b>{c.summary.guarantee}</p>
+          {c.summary.sticker && <img className="ns-img ns-sticker" src={c.summary.sticker} alt="" />}
+          <a className="btn btn-gold ns-cta" href={c.summary.link}><span>{c.summary.button}</span><i>→</i></a>
+          {c.summary.payImage
+            ? <img className="ns-payimg" src={c.summary.payImage} alt="" />
+            : <div className="ns-pay">{c.summary.payItems.map((x, i) => <span key={i}>{x}</span>)}</div>}
+          <div className="ns-rowproof">
+            {c.summary.avatars.some(Boolean) && <div className="ns-av">{c.summary.avatars.filter(Boolean).map((a, i) => <img key={i} src={a} alt="" />)}</div>}
+            <div><div className="ns-stars">★★★★★</div><p className="ns-proof">{s.proof}</p></div>
+          </div>
+        </div>
+      </div></section></Reveal>
+    ),
+    basico: () => (
+      <Reveal><section className="ns ns-black ns-basic"><div className="ns-in">
+        <h2 className="ns-h">{c.basico.title}</h2>
+        <ul className="ns-ticks">{c.basico.items.map((x, i) => <li key={i}><Check /><span><Rich text={x} /></span></li>)}</ul>
+      </div></section></Reveal>
+    ),
+    caution: () => (
+      <Reveal><section className="ns ns-caution"><div className="ns-in">
+        <h2 className="ns-h">{c.caution.title}<br />{c.caution.title2}</h2>
+        <Carousel items={c.caution.items} />
+      </div></section></Reveal>
+    ),
+    placa: () => (
+      <Reveal><section className="ns ns-placa"><div className="ns-in">
+        <h2 className="ns-h">{c.placa.title}</h2>
+        {c.placa.paragraphs.map((t, i) => <p key={i}><Rich text={t} /></p>)}
+      </div>
+        {c.placa.videoUrl
+          ? <VideoBox url={c.placa.videoUrl} poster={c.placa.image} />
+          : c.placa.image && <img className="ns-pimg" src={c.placa.image} alt="" />}
+      </section></Reveal>
+    ),
+    origin: () => (
+      <>
+        <div aria-hidden style={{ height: Math.max(0, Number(c.origin.spacer) || 0), background: "#000" }} />
+        <Reveal><section className="ns ns-origin"><div className="ns-in">
+          <h2 className="ns-h">{c.origin.title} <span>{c.origin.titleGold}</span></h2>
+          {c.origin.paragraphs.map((t, i) => <p key={i}><Rich text={t} /></p>)}
+        </div>
+          {c.origin.image && <div className="ns-orimg"><img src={c.origin.image} alt="" /></div>}
+        </section></Reveal>
+      </>
     ),
     benefits: () => (
       <Reveal><section className="sec center"><div className="wrap">
@@ -166,10 +229,10 @@ export default async function Home() {
     <main>
       <Motion />
       {c.sections.filter((x) => x.on && R[x.id]).map((x) => <div key={x.id}>{R[x.id]()}</div>)}
-      <footer className="foot"><div className="wrap">
-        <p>© {new Date().getFullYear()} {s.brand}. {s.footerText}</p>
-        <p style={{ marginTop: 6 }}>{s.footerSub}</p>
-      </div></footer>
+      <footer className="ns-foot">
+        <p>Copyright © {new Date().getFullYear()} {s.footerOwner}. {s.footerText}</p>
+        {s.footerSub && <p>{s.footerSub}</p>}
+      </footer>
       <WhatsAppWidget phone={s.whatsapp} text={s.whatsappText} label={s.waLabel} title={s.waTitle} body={s.waText} cta={s.waCta} />
     </main>
   );
