@@ -6,7 +6,7 @@ import { getContent } from "@/lib/content";
 import { createDeposit } from "@/lib/gladepay";
 import { insertOrder, updateByReference } from "@/lib/db";
 import { isCpf, isEmail, isName, isPhone, onlyDigits } from "@/lib/validate";
-import { PIX_LIMIT_CENTS, computePrice, findCoupon } from "@/lib/coupons";
+import { activeCoupons, autoPricing, computePrice, findCoupon } from "@/lib/coupons";
 
 export const runtime = "nodejs";
 const bad = (error: string, status = 400) => NextResponse.json({ error }, { status });
@@ -19,11 +19,12 @@ export async function POST(req: Request) {
   const track = c.plans.tracks.find((t) => t.id === b.track);
   const plan = track?.plans.find((p) => p.id === b.plan);
   if (!plan || !track) return bad("Plano inválido");
-  const coupon = b.coupon ? findCoupon(b.coupon) : null;
+  const ap = autoPricing(c.coupons);
+  const coupon = b.coupon ? findCoupon(b.coupon, activeCoupons(c.coupons)) : null;
   if (b.coupon && !coupon) return bad("Cupom inválido ou expirado");
   const baseCents = Math.round(plan.price * 100);
-  const cents = computePrice(baseCents, coupon).totalCents;
-  if (cents > PIX_LIMIT_CENTS) return bad("Este plano passa do limite de R$ 500 do Pix. Ajuste o valor do plano no painel.");
+  const cents = computePrice(baseCents, coupon, ap).totalCents;
+  if (cents > ap.limitCents) return bad(`Este plano passa do limite de R$ ${(ap.limitCents / 100).toLocaleString("pt-BR")} do Pix. Ajuste o valor do plano no painel.`);
   if (!isName(b.name || "")) return bad("Nome é obrigatório");
   if (!isEmail(b.email || "")) return bad("Email inválido");
   if (!isCpf(b.cpf || "")) return bad("CPF inválido");
