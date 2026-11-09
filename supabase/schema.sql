@@ -36,3 +36,9 @@ begin
   where public_id = p_public_id;
 end $$;
 grant execute on function public.mentoria_create_order, public.mentoria_update_order, public.mentoria_update_order_public to anon;
+create table if not exists public.mentoria_content (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz default now()
+);
+alter table public.mentoria_content enable row level security;
