@@ -4,7 +4,7 @@ import type { Content } from "@/config/site";
 import CheckoutModal, { type Selection } from "./CheckoutModal";
 import Reveal from "./Reveal";
 import { useTween } from "./CountUp";
-import { computePrice } from "@/lib/coupons";
+import { computePrice, type AutoPricing } from "@/lib/coupons";
 
 function Price({ v }: { v: number }) {
   const n = useTween(v);
@@ -14,7 +14,7 @@ function Price({ v }: { v: number }) {
 
 type CareerMap = Record<string, Content["career"]["soldado"]>;
 
-export default function Plans({ data, career }: { data: Content["plans"]; career: Content["career"] }) {
+export default function Plans({ data, career, auto, checkout }: { data: Content["plans"]; career: Content["career"]; auto: AutoPricing; checkout: Content["checkout"] }) {
   const [ti, setTi] = useState(0);
   const [sel, setSel] = useState<Selection | null>(null);
   const track = data.tracks[ti] ?? data.tracks[0];
@@ -31,7 +31,7 @@ export default function Plans({ data, career }: { data: Content["plans"]; career
       <div className="plans">
         {track.plans.map((p, i) => {
           const orig = Math.round(p.price * 100);
-          const info = computePrice(orig);
+          const info = computePrice(orig, null, auto);
           const off = info.percent > 0;
           return (
           <div key={i} className={`plan ${p.featured ? "feat" : ""}`}>
@@ -75,7 +75,7 @@ export default function Plans({ data, career }: { data: Content["plans"]; career
           <p className="rfine">{data.finePrint} <a href={data.termsLink || "#"}>{data.termsText}</a>.</p>
         </div>
       </Reveal>
-      {sel && <CheckoutModal selection={sel} onClose={() => setSel(null)} />}
+      {sel && <CheckoutModal selection={sel} cfg={checkout} onClose={() => setSel(null)} />}
     </div>
   );
 }
