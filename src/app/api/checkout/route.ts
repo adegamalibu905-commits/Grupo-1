@@ -70,4 +70,4 @@ export async function POST(req: Request) {
     const detail = e instanceof Error ? e.message : "";
     return bad(`Não foi possível gerar o Pix agora${detail ? ` (${detail})` : ""}. Tente novamente.`, 502);
   }
-}
+} 
