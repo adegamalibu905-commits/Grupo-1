@@ -1,0 +1,25 @@
+/* ===== Suporte WhatsApp: vidro transparente com detalhes dourados ===== */
+.wa{position:fixed;right:14px;bottom:14px;z-index:50;display:flex;align-items:center;gap:10px;font-family:var(--font-head),system-ui,sans-serif}
+.wa-card{position:relative;display:block;width:min(250px,calc(100vw - 112px));padding:13px 16px 12px;border-radius:16px;overflow:hidden;
+  color:#fff;border:1px solid rgba(200,168,106,.32);
+  background:linear-gradient(160deg,rgba(40,34,22,.5),rgba(10,10,8,.38));
+  -webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);
+  box-shadow:0 12px 32px rgba(0,0,0,.45),0 0 26px -8px rgba(200,168,106,.35),inset 0 1px 0 rgba(255,255,255,.06);
+  opacity:0;transform:translateX(16px) scale(.96);pointer-events:none;transition:opacity .5s var(--ease),transform .5s var(--ease),border-color .3s}
+.wa-card::before{content:"";position:absolute;left:0;right:0;top:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--gold-l),transparent)}
+.wa-card.on{opacity:1;transform:none;pointer-events:auto}
+.wa-card:hover{border-color:rgba(226,203,151,.6)}
+.wa-card small{display:block;color:var(--gold);font-size:10px;font-weight:700;letter-spacing:.2em;margin-bottom:4px;text-transform:uppercase}
+.wa-card b{display:block;font-size:16px;font-weight:700;line-height:1.2;color:#fff}
+.wa-body{display:block;margin-top:3px;font-size:12.5px;line-height:1.35;color:rgba(244,241,234,.62)}
+.wa-card i{display:block;margin-top:8px;font-style:normal;font-size:12px;font-weight:700;color:var(--gold-l)}
+.wa-x{position:absolute;top:6px;right:8px;width:20px;height:20px;border:0;border-radius:50%;background:transparent;color:rgba(244,241,234,.5);font-size:15px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.wa-x:hover{color:var(--gold-l)}
+.wa-btn{flex:none;width:58px;height:58px;border-radius:18px;display:grid;place-items:center;color:#fff;
+  border:1px solid rgba(200,168,106,.5);
+  background:linear-gradient(145deg,rgba(60,50,30,.5),rgba(12,11,8,.4));
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 10px 26px rgba(0,0,0,.45),0 0 0 4px rgba(200,168,106,.08),inset 0 1px 0 rgba(255,255,255,.08);
+  transition:transform .2s,border-color .3s;animation:wapulse 2.8s infinite}
+.wa-btn:hover{transform:scale(1.07);border-color:var(--gold-l)}
+@keyframes wapulse{0%{box-shadow:0 10px 26px rgba(0,0,0,.45),0 0 0 0 rgba(200,168,106,.4),inset 0 1px 0 rgba(255,255,255,.08)}70%,100%{box-shadow:0 10px 26px rgba(0,0,0,.45),0 0 0 14px rgba(200,168,106,0),inset 0 1px 0 rgba(255,255,255,.08)}}
