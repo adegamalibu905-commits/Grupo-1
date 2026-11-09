@@ -5,11 +5,14 @@ import { useEffect, useState } from "react";
 const L: Record<string, string> = {
   settings: "⚙️ Geral (marca, WhatsApp, SEO, rodapé)", theme: "🎨 Cores do site", sections: "📑 Seções (ordem e visibilidade)",
   hero: "Topo / Título", video: "Vídeo e botões", plans: "Planos e preços", renew: "Renovação ex-alunos", what: "O que é a Mentoria",
-  steps: "Como funciona", forwho: "Para quem é", results: "Galeria de aprovados", testimonials: "Depoimentos", mentor: "Mentor",
+  redacao: "Correção de redações CFO", receive: "O que você irá receber + vídeo", basico: "Afinal, o que é fazer o básico", caution: "Cuidado! (carrossel)", placa: "Receba a Placa OBA", origin: "De onde surgiu o Método", forwho: "Para quem é", results: "Galeria de aprovados", testimonials: "Depoimentos", mentor: "Mentor",
   summary: "Resumindo + garantia", benefits: "Benefícios da carreira", banner: "Faixa de destaque", faq: "Perguntas frequentes", final: "Chamada final",
   brand: "Nome da marca", logo: "Logo (imagem)", metaTitle: "Título da aba (SEO)", metaDescription: "Descrição (SEO)", whatsapp: "WhatsApp (só números com DDI, ex: 5531999999999)",
   whatsappText: "Mensagem inicial do WhatsApp", waLabel: "Cartão WhatsApp: rótulo", waTitle: "Cartão WhatsApp: título", waText: "Cartão WhatsApp: texto", waCta: "Cartão WhatsApp: chamada",
-  proof: "Prova social", guarantee: "Garantia (texto curto)", footerText: "Rodapé", footerSub: "Rodapé (linha 2)",
+  proof: "Prova social", guarantee: "Garantia (texto curto)", footerOwner: "Rodapé: nome após Copyright © ano", footerText: "Rodapé: frase final", footerSub: "Rodapé (linha 2, opcional)",
+  paragraphs: "Parágrafos (use **texto** para negrito)", list: "Lista (use **texto** para negrito)", lines: "Linhas", intro: "Introdução",
+  image1: "Foto 1", image2: "Foto 2", quote1Title: "Cartão 1: título", quote1Text: "Cartão 1: texto", quote2Title: "Cartão 2: título", quote2Text: "Cartão 2: texto",
+  proofTitle: "Título 'Não se convenceu?'", videoUrl: "Link do vídeo (YouTube, Vimeo ou .mp4)", sticker: "Figurinha/imagem (opcional)", payImage: "Imagem dos meios de pagamento (opcional)", payItems: "Meios de pagamento (texto)", avatars: "Fotos pequenas dos alunos (prova social)", spacer: "Espaço preto antes da seção (px; 56 ≈ 1,5 cm)", title2: "Título (2ª linha)",
   bg: "Fundo", card: "Cartões", line: "Bordas", text: "Texto", muted: "Texto secundário", gold: "Dourado", goldLight: "Dourado claro", goldDark: "Dourado escuro",
   blue: "Azul", blueLight: "Azul claro", blueDark: "Azul escuro", band: "Faixa azul", accent: "Destaque (amarelo)",
   overline: "Texto pequeno acima", titleStart: "Título (início)", titleGold: "Título (destaque)", titleAccent: "Título (palavra colorida)", titleEnd: "Título (final)",
@@ -21,7 +24,7 @@ const L: Record<string, string> = {
   images: "Imagens (URL ou envio)", role: "Cargo/Resultado", bullets: "Tópicos", guaranteeTitle: "Garantia: título", notFor: "Não é para quem", on: "Visível no site", id: "ID",
 };
 const lab = (k: string) => L[k] ?? k.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
-const isImg = (k: string) => /^(image|images|logo|poster|foto)$/i.test(k);
+const isImg = (k: string) => /^(image\d*|images|logo|poster|foto|sticker|payImage|avatars)$/i.test(k);
 const isColor = (v: any, k: string) => typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v) && k !== "text";
 const uid = () => "n" + Date.now().toString(36);
 const blank = (v: any): any => Array.isArray(v) ? [] : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, k === "id" ? uid() : blank(x)])) : typeof v === "number" ? 0 : typeof v === "boolean" ? false : "";
@@ -128,7 +131,7 @@ export default function Admin() {
         <button className="save" disabled={busy || !u || !p}>{busy ? "Entrando…" : "Entrar"}</button>
       </form>
     </div>);
-  const order = ["sections", "settings", "theme", "hero", "video", "plans", "renew", "what", "steps", "forwho", "results", "testimonials", "mentor", "summary", "benefits", "banner", "faq", "final"];
+  const order = ["sections", "settings", "theme", "hero", "video", "plans", "renew", "what", "redacao", "forwho", "receive", "summary", "basico", "results", "testimonials", "caution", "placa", "origin", "mentor", "benefits", "banner", "faq", "final"];
   const keys = [...order.filter((k) => k in data), ...Object.keys(data).filter((k) => !order.includes(k))];
   return (
     <div className="ad"><style>{CSS}</style>
