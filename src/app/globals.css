@@ -120,16 +120,6 @@ details[open] summary{color:var(--gold-l);margin-bottom:8px}
 .cta-final{background:radial-gradient(60% 80% at 50% 100%,rgba(200,168,106,.2),transparent 70%)}
 .foot{border-top:1px solid var(--line);padding:32px 0 110px;text-align:center;font-size:12px;color:var(--muted)}
 .prog{position:fixed;top:0;left:0;width:100%;height:3px;z-index:90;transform-origin:0 50%;transform:scaleX(var(--prog,0));background:linear-gradient(90deg,var(--gold-d),var(--gold-l))}
-.wa{position:fixed;right:14px;bottom:14px;z-index:50;display:flex;align-items:center;gap:10px}
-.wa-card{background:#fff;color:#111;border-radius:12px;padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.4);font-size:12px;opacity:0;transform:translateX(16px) scale(.96);transition:all .5s var(--ease);position:relative;pointer-events:none}
-.wa-card.on{opacity:1;transform:none;pointer-events:auto}
-.wa-card small{display:block;color:var(--gold-d);font-size:9px;letter-spacing:.14em}
-.wa-card b{display:block;font-size:13px}
-.wa-card i{font-style:normal;color:var(--gold-d);font-size:11px}
-.wa-x{position:absolute;top:-8px;left:-8px;width:20px;height:20px;border-radius:50%;border:0;background:#111;color:#fff;font-size:11px;cursor:pointer}
-.wa-btn{width:56px;height:56px;border-radius:50%;background:var(--wa);display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.4);font-size:28px;transition:transform .2s;animation:pulse 2.4s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 #25d36699}70%,100%{box-shadow:0 0 0 16px #25d36600}}
-.wa-btn:hover{transform:scale(1.08)}
 .reveal{opacity:0;transform:translateY(32px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
 .reveal.in{opacity:1;transform:none}
 .st{opacity:0;transform:translateY(22px);transition:opacity .7s var(--ease) calc(var(--i,0)*80ms),transform .7s var(--ease) calc(var(--i,0)*80ms),border-color .3s,box-shadow .35s}
