@@ -72,13 +72,14 @@ export const DEFAULT_CONTENT = {
   career: {
     soldado: {
       overline: "DEPOIS DA APROVAÇÃO", titleStart: "O que a carreira de", titleAccent: "Soldado PMMG", titleEnd: "oferece",
-      subtitle: "Remuneração, benefícios e possibilidades vinculadas à carreira de Soldado.",
+      subtitle: "Remuneração, benefícios e possibilidades vinculadas à carreira militar estadual.",
       items: [
-        { t: "R$ 6.620,47", d: "Remuneração indicada para a carreira de Soldado" },
+        { t: "R$ 5.620,47", d: "Salário indicado para Soldado" },
         { t: "R$ 1.650,00", d: "Vale alimentação" },
         { t: "R$ 8.155,36 por ano", d: "Abono fardamento" },
+        { t: "Nível superior", d: "Aceita curso superior sequencial" },
         { t: "Plano de saúde", d: "Benefício da carreira" },
-        { t: "ADE", d: "6% em três anos e 10% em cinco anos" },
+        { t: "ADE", d: "Aumento de até 70% no salário por tempo de serviço" },
         { t: "Férias + 13º", d: "1/3 de férias e 13º salário" },
         { t: "Porte nacional", d: "Porte de arma em âmbito nacional" },
         { t: "Aproximadamente R$ 20 mil", d: "Projeção informada de aposentadoria integral como Subtenente" },
