@@ -2,13 +2,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { isCpf, isEmail, isName, isPhone, maskCpf, maskPhone } from "@/lib/validate";
 import { THUMB } from "@/lib/thumb";
+import type { Content } from "@/config/site";
+import Rich from "./Rich";
 import "./checkout.css";
 
-// ====== EDITE AQUI ======
-const BRAND_TAG = "[Mentoria OBA]";                 // nome que aparece antes da carreira
-const SELLER = "PMMinas Negócios Digitais LTDA";    // texto "Curso ofertado por"
-// ========================
-
+// Textos e imagem agora vêm do painel /admin (Pagamento › Janela de pagamento).
 const PIX_TTL = 1800; // 30 minutos para o Pix expirar
 
 const money = (c: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(c / 100);
@@ -43,7 +41,7 @@ type Pix = { publicId: string; expiresAt: string; qrCodeText: string; qrCodeBase
 type Step = "form" | "loading" | "pix" | "paid";
 type Applied = { code: string; percent: number; originalCents: number; discountCents: number; totalCents: number };
 
-export default function CheckoutModal({ selection, onClose }: { selection: Selection; onClose: () => void }) {
+export default function CheckoutModal({ selection, onClose, cfg, preview }: { selection: Selection; onClose: () => void; cfg: Content["checkout"]; preview?: boolean }) {
   const [f, setF] = useState({ email: "", email2: "", name: "", cpf: "", phone: "" });
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [step, setStep] = useState<Step>("form");
@@ -65,7 +63,7 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
   const discount = original - total;
   const [trackLabel, planName = ""] = selection.title.split(" — ");
   const months = planName.match(/\d+/)?.[0];
-  const productShort = `🎖️ ${BRAND_TAG} ${trackLabel.toUpperCase()}`;
+  const productShort = `🎖️ ${cfg.brandTag} ${trackLabel.toUpperCase()}`;
   const productFull = months ? `${productShort} - ${months} MESES` : productShort;
 
   async function applyCoupon() {
@@ -170,13 +168,12 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
   return (
     <div ref={bgRef} className="modal-bg" onClick={(e) => e.target === e.currentTarget && onClose()} role="dialog" aria-modal="true">
       <div ref={boxRef} className="modal">
-        {/* TOPO (igual à 2ª imagem) */}
         <div className="ck-top">
-          <img className="ck-thumb" src={THUMB} alt={productFull} />
+          <img className="ck-thumb" src={cfg.image || THUMB} alt={productFull} />
           <div className="ck-info">
             <h4>{productFull}</h4>
             <p className="ck-course">Curso: {productShort}</p>
-            <div className="ck-small">à vista no Pix</div>
+            <div className="ck-small">{cfg.priceNote}</div>
             <div className="ck-price">{money(total)}</div>
             {discount > 0 && <div className="ck-old">de {money(original)}</div>}
             <p className="ck-access">{planName}</p>
@@ -187,10 +184,9 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
         {(step === "form" || step === "loading") && (<>
           {error && <div className="err-box">{error}</div>}
 
-          {/* CUPOM (logo abaixo do preço) */}
           <div className="ck-cupom">
             <button type="button" className="ck-cupom-head" onClick={() => setCouponOpen((o) => !o)} aria-expanded={couponOpen}>
-              <span>🎟️ Tem um cupom de desconto?</span><span className={`ck-chev ${couponOpen ? "up" : ""}`}>⌄</span>
+              <span>{cfg.couponTitle}</span><span className={`ck-chev ${couponOpen ? "up" : ""}`}>⌄</span>
             </button>
             {couponOpen && (
               <div className="ck-cupom-body">
@@ -201,10 +197,10 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
                   </div>
                 ) : (
                   <div className="ck-cupom-row">
-                    <input value={couponInput} placeholder="Digite seu Cupom" autoCapitalize="characters" autoComplete="off"
+                    <input value={couponInput} placeholder={cfg.couponPlaceholder} autoCapitalize="characters" autoComplete="off"
                       onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                       onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyCoupon(); } }} />
-                    <button type="button" disabled={couponLoading} onClick={applyCoupon}>{couponLoading ? "..." : "inserir ✓"}</button>
+                    <button type="button" disabled={couponLoading} onClick={applyCoupon}>{couponLoading ? "..." : cfg.couponButton}</button>
                   </div>
                 )}
                 {couponMsg && <div className="ck-cupom-err">{couponMsg}</div>}
@@ -218,33 +214,32 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
           {field("cpf", "CPF", "___.___.___-__", "text", "numeric")}
           {field("phone", "Celular", "Informe seu celular", "tel", "numeric")}
 
-          {/* BLOCO IGUAL À 1ª IMAGEM */}
           <div className="ck-box">
             <h5>
               <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="13" fill="#6366f1" /><path d="M13 6.5V13l4 2.5" stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              Transação segura e confirmada na hora
+              {cfg.secureTitle}
             </h5>
-            <p>O pagamento com Pix leva poucos segundos usando a tecnologia do Banco Central para garantir a proteção dos seus dados em uma transação segura. Copie o código ou leia o QR Code para pagar</p>
+            <p>{cfg.secureText}</p>
           </div>
 
           <div className="ck-det">
-            <h5>Detalhes da Compra</h5>
+            <h5>{cfg.detailsTitle}</h5>
             <div className="ck-row"><span>{productShort}</span><b>{money(original)}</b></div>
             {discount > 0 && <div className="ck-row desc"><span>{coupon ? `Cupom ${coupon.code} (−${coupon.percent}%)` : `Desconto à vista no Pix (−${Math.round((discount / original) * 100)}%)`}</span><b>− {money(discount)}</b></div>}
             <div className="ck-total"><span>Total</span><b>{money(total)}</b></div>
           </div>
 
-          <button className="ck-fin" disabled={step === "loading"} onClick={submit}>Finalizar Pedido ✓</button>
-          {step === "loading" && <div className="ck-wait"><span className="ck-spin" />Aguardando validação do seu dispositivo...</div>}
+          <button className="ck-fin" disabled={step === "loading"} onClick={preview ? () => setError("Prévia do painel: aqui o pedido não é enviado.") : submit}>{cfg.finishButton}</button>
+          {step === "loading" && <div className="ck-wait"><span className="ck-spin" />{cfg.waitText}</div>}
 
           <div className="ck-secure">
             <svg width="30" height="32" viewBox="0 0 30 32" aria-hidden="true"><rect x="2" y="13" width="26" height="18" rx="4" fill="#6b7280" /><path d="M8 13V9a7 7 0 0 1 14 0v4" stroke="#6b7280" strokeWidth="3.5" fill="none" /><circle cx="15" cy="22" r="2.4" fill="#fff" /></svg>
-            <span>Ambiente totalmente <b>seguro</b> e <b>protegido</b> contra fraudes.</span>
+            <span><Rich text={cfg.safeNote} /></span>
           </div>
 
           <div className="ck-legal">
-            Curso ofertado por: {SELLER}<br />
-            Ao clicar em <b>Finalizar Pedido</b>, eu concordo (i) que estou de acordo com os <b>Termos de Compra</b>; (ii) que li e estou ciente da <b>Política de Privacidade</b>; (iii) que concordo com os <b>Termos de Uso</b>; e (iv) que sou maior de idade ou autorizado e acompanhado por um tutor legal.
+            {cfg.sellerLabel} {cfg.seller}<br />
+            <Rich text={cfg.legal} />
           </div>
         </>)}
 
@@ -252,18 +247,18 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
           <div className="px">
             <style>{PIX_CSS}</style>
             <div className={`px-timer ${left > 0 && left <= 300 ? "warn" : ""} ${left === 0 ? "off" : ""}`}>
-              <span>{left > 0 ? "Este Pix expira em" : "Pix expirado"}</span>
+              <span>{left > 0 ? cfg.pixExpires : cfg.pixExpired}</span>
               <b>{mm}:{ss}</b>
               <div className="px-bar"><i style={{ width: `${Math.min(100, (left / PIX_TTL) * 100)}%` }} /></div>
             </div>
 
             {left > 0 ? (<>
-              <p className="px-h">Escaneie o QR Code com o app do seu banco</p>
+              <p className="px-h">{cfg.pixScan}</p>
               {qrSrc ? <img className="px-qr" src={qrSrc} alt="QR Code Pix" /> : <div className="px-qr px-skel" />}
 
-              <p className="px-h">Ou use o Pix Copia e Cola</p>
+              <p className="px-h">{cfg.pixOr}</p>
               <div className="px-code" onClick={(e) => { const sel = window.getSelection(); if (sel) { const r = document.createRange(); r.selectNodeContents(e.currentTarget); sel.removeAllRanges(); sel.addRange(r); } }}>{pix.qrCodeText}</div>
-              <button type="button" className="px-copy" onClick={copy}>{copied ? "Código copiado ✓" : "Copiar código Pix"}</button>
+              <button type="button" className="px-copy" onClick={copy}>{copied ? cfg.pixCopied : cfg.pixCopy}</button>
 
               <div className="px-info">
                 <div><span>Produto</span><b>{productShort}</b></div>
@@ -274,22 +269,20 @@ export default function CheckoutModal({ selection, onClose }: { selection: Selec
               </div>
 
               <ol className="px-steps">
-                <li>Abra o app do seu banco e vá em <b>Pix</b>.</li>
-                <li>Escolha <b>Pix Copia e Cola</b> ou <b>Ler QR Code</b>.</li>
-                <li>Confira o valor e confirme o pagamento.</li>
+                {cfg.pixSteps.map((t, i) => <li key={i}><Rich text={t} /></li>)}
               </ol>
 
-              <div className="px-wait"><span className="ck-spin" />Aguardando a confirmação do pagamento…</div>
+              <div className="px-wait"><span className="ck-spin" />{cfg.pixWaiting}</div>
             </>) : (
-              <button type="button" className="px-copy" onClick={() => { setPix(null); setStep("form"); }}>Gerar novo Pix</button>
+              <button type="button" className="px-copy" onClick={() => { setPix(null); setStep("form"); }}>{cfg.pixNew}</button>
             )}
           </div>
         )}
 
         {step === "paid" && (<div className="ok-box">
-          <div className="big">✓</div><h3>Pagamento confirmado!</h3>
-          <p className="muted">Enviaremos o acesso para {f.email}.</p>
-          <button className="btn btn-pay" style={{ marginTop: 16 }} onClick={onClose}>Fechar</button>
+          <div className="big">✓</div><h3>{cfg.paidTitle}</h3>
+          <p className="muted">{cfg.paidText.replace("{email}", f.email)}</p>
+          <button className="btn btn-pay" style={{ marginTop: 16 }} onClick={onClose}>{cfg.paidButton}</button>
         </div>)}
       </div>
     </div>
