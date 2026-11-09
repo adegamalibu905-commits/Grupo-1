@@ -1,4 +1,52 @@
-/* Vídeo dentro do carrossel "Cuidado!" */
-.ns-car .ns-cvid{margin:0 auto 26px}
-.ns-car .ns-cvid .video{margin:0 auto;max-width:100%;border-radius:14px;box-shadow:none;border-color:#2a2a2a}
-.ns-car .ns-cvid .play{width:60px;height:60px;font-size:20px}
+/* Carrossel "Cuidado!": cartões com capa + play e janela grande com o vídeo */
+.vc{--w:min(80vw,340px);--gap:14px;position:relative;max-width:760px;margin:0 auto}
+
+.vc-track{display:flex;gap:var(--gap);align-items:center;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;padding:4px calc(50% - var(--w) / 2);position:relative;scrollbar-width:none;overscroll-behavior-x:contain}
+.vc-track::-webkit-scrollbar{display:none}
+.vc-slide{flex:0 0 var(--w);scroll-snap-align:center;scroll-snap-stop:always;opacity:.55;transform:scale(.96);transition:opacity .3s,transform .3s}
+.vc-slide.on{opacity:1;transform:none}
+
+/* Cartão com capa (tamanho padrão) */
+.vc-card{position:relative;display:block;width:100%;aspect-ratio:3/4;border-radius:16px;overflow:hidden;background:#000;box-shadow:0 18px 40px -22px rgba(0,0,0,.55);-webkit-tap-highlight-color:transparent}
+.vc-card.playable{cursor:pointer}
+.vc-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none}
+.vc-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.35));pointer-events:none}
+.vc-play{position:absolute;left:50%;top:50%;z-index:2;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;border:3px solid rgba(255,255,255,.9);background:rgba(0,0,0,.35);backdrop-filter:blur(3px);color:#fff;display:grid;place-items:center;padding-left:4px;transition:transform .2s,background .2s}
+.vc-card.playable:hover .vc-play{transform:scale(1.08);background:rgba(0,0,0,.5)}
+
+/* Texto embaixo do cartão (só aparece se você preencher) */
+.vc-after{text-align:center;padding:14px 6px 0;color:#111}
+.vc-after .vc-text{font-size:15px;line-height:1.55;color:#222;margin-bottom:10px}
+.vc-after .vc-name{font-weight:700;font-style:italic;font-size:17px;color:#000}
+.vc-after .vc-role{font-style:italic;font-weight:600;font-size:16px;color:#a37f00;margin-top:2px}
+
+/* Cartão só de texto (depoimento sem foto e sem vídeo) */
+.vc-tcard{background:#000;color:#fff;border-radius:20px;padding:34px 24px;text-align:center}
+.vc-tcard .vc-text{font-size:15px;line-height:1.6;color:#f4f4f4;margin-bottom:22px}
+.vc-tcard .vc-name{font-weight:700;font-style:italic;font-size:18px;color:#fff}
+.vc-tcard .vc-role{font-style:italic;font-weight:500;font-size:17px;color:#ffd400;margin-top:2px}
+
+/* Setas e bolinhas */
+.vc-arrow{position:absolute;top:calc(50% - 22px);z-index:3;width:40px;height:40px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;display:grid;place-items:center;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.vc-arrow svg{width:22px;height:22px}
+.vc-arrow.l{left:calc(50% - var(--w) / 2 + 8px)}
+.vc-arrow.r{right:calc(50% - var(--w) / 2 + 8px)}
+.vc-dots{display:flex;gap:8px;justify-content:center;margin-top:20px}
+.vc-dots button{width:9px;height:9px;border-radius:50%;border:0;background:#c9c9c9;padding:0;cursor:pointer}
+.vc-dots button.on{background:#000}
+
+/* Janela grande com o vídeo */
+.vc-lb{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;animation:vcfade .2s ease}
+@keyframes vcfade{from{opacity:0}}
+.vc-lb-top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;color:#fff;z-index:2}
+.vc-lb-count{font-size:17px;font-weight:500;opacity:.9}
+.vc-lb-x{background:none;border:0;color:#fff;cursor:pointer;padding:6px;display:grid;place-items:center}
+.vc-lb-stage{position:relative;width:min(100vw,960px,calc((100vh - 120px) * 16 / 9));aspect-ratio:16/9;background:#000}
+.vc-lb-stage iframe,.vc-lb-stage video{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.vc-lb-stage.vert{aspect-ratio:9/16;width:auto;height:min(84vh,820px);max-width:100vw}
+.vc-lb-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:44px;height:44px;border:0;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;padding:0;cursor:pointer}
+.vc-lb-arrow.l{left:8px}.vc-lb-arrow.r{right:8px}
+
+@media (min-width:700px){
+  .vc{--w:340px}
+}
