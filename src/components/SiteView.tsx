@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Content } from "@/config/site";
 import { autoPricing } from "@/lib/coupons";
 import Rich from "./Rich";
@@ -135,7 +135,7 @@ export default function SiteView({ c }: { c: Content }) {
             <p className="whigh">{c.what.highlight}</p>
             <div className="wcards">
               {c.what.items.map((it, i) => (
-                <div className="wcard st" style={{ "--i": i } as React.CSSProperties} key={i}>
+                <div className="wcard st" style={{ "--i": i } as CSSProperties} key={i}>
                   <div className="wav">{it.image ? <img src={it.image} alt="" /> : it.icon}</div>
                   <h3>{it.t}</h3>
                   <p><Rich text={it.d} /></p>
@@ -249,7 +249,7 @@ export default function SiteView({ c }: { c: Content }) {
             <div className="stars" aria-hidden style={{ marginBottom: 22 }}>★★★★★</div>
             <div className="cards">
               {c.testimonials.items.map((t, i) => (
-                <div className="card st" style={{ "--i": i } as React.CSSProperties} key={i}>
+                <div className="card st" style={{ "--i": i } as CSSProperties} key={i}>
                   <div className="av">{t.image ? <img src={t.image} alt={t.name} /> : "👤"}</div>
                   <h3>{t.name}</h3>
                   <p className="muted">{t.role}</p>
@@ -377,4 +377,4 @@ export default function SiteView({ c }: { c: Content }) {
       </div>
     </>
   );
-} 
+}
