@@ -29,4 +29,4 @@ export function computePrice(originalCents: number, coupon: Coupon | null | unde
   const percent = Math.max(auto, coupon?.percent ?? 0);
   const totalCents = percent ? applyDiscount(originalCents, percent) : originalCents;
   return { originalCents, totalCents, percent, auto: percent > 0 && !(coupon && coupon.percent >= auto) };
-}
+} 
