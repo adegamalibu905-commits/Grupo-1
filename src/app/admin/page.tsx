@@ -15,7 +15,7 @@ const L: Record<string, string> = {
   overline: "Texto pequeno acima", titleStart: "Título (início)", titleGold: "Título (destaque)", titleAccent: "Título (palavra colorida)", titleEnd: "Título (final)",
   subtitle: "Subtítulo", support: "Texto de apoio", image: "Imagem", stats: "Números de destaque", n: "Número", l: "Legenda", title: "Título", url: "Link do vídeo (YouTube, Vimeo ou .mp4)",
   poster: "Imagem de capa", buttons: "Botões", link: "Link (#planos, https://… )", note: "Observação", badges: "Selos", tracks: "Carreiras", sub: "Subtítulo/Ano",
-  colorTheme: "Cor da carreira (gold = dourado, blue = azul)", label: "Rótulo", name: "Nome", price: "Preço (R$)", oldPrice: "Preço antigo (R$, 0 = oculto)", featured: "Destacar (Mais escolhido)",
+  colorTheme: "Cor da carreira (gold = dourado, blue = azul)", label: "Rótulo", name: "Nome", price: "2) Preço real cobrado, sem cupom (R$)", oldPrice: "1) Preço antigo, aparece riscado (R$, 0 = oculto)", featured: "Destacar (Mais escolhido)",
   features: "Benefícios do plano", priceNote: "Texto abaixo do preço", cta: "Texto do botão", ribbon: "Etiqueta de destaque", receivesTitle: "Título 'Tudo que recebe'",
   receives: "Itens recebidos", payNote: "Nota de pagamento", button: "Texto do botão", items: "Itens", icon: "Ícone/Emoji", t: "Título", d: "Descrição", q: "Pergunta", a: "Resposta",
   images: "Imagens (URL ou envio)", role: "Cargo/Resultado", bullets: "Tópicos", guaranteeTitle: "Garantia: título", notFor: "Não é para quem", on: "Visível no site", id: "ID",
@@ -79,6 +79,8 @@ function Node({ k, v, set, fixed }: { k: string; v: any; set: (x: any) => void; 
   }
   if (v && typeof v === "object") {
     const ent = Object.entries(v).filter(([kk]) => fixed || kk !== "id");
+    const oi = ent.findIndex(([kk]) => kk === "oldPrice"), pi = ent.findIndex(([kk]) => kk === "price");
+    if (oi > pi && pi >= 0) ent.splice(pi, 0, ent.splice(oi, 1)[0]);
     return <div className={k === "_" ? "" : "grp"}>{k !== "_" && <h4>{lab(k)}</h4>}{ent.map(([kk, x]) => (
       kk === "label" && fixed ? <div className="f" key={kk}><label>Seção</label><b>{String(x)}</b></div> :
       kk === "id" ? null : <Node key={kk} k={kk} v={x} fixed={fixed} set={(n) => set({ ...v, [kk]: n })} />))}</div>;
