@@ -239,6 +239,22 @@ export const DEFAULT_CONTENT = {
     ],
   },
   final: { title: "Sua farda começa com a decisão de hoje.", text: "Garanta sua vaga e comece com cronograma, material e suporte desde o primeiro dia.", button: "GARANTIR MINHA VAGA →", link: "#planos" },
+  checkout: {
+    brandTag: "[Mentoria OBA]", seller: "PMMinas Negócios Digitais LTDA", sellerLabel: "Curso ofertado por:", image: "",
+    priceNote: "à vista no Pix",
+    couponTitle: "🎟️ Tem um cupom de desconto?", couponPlaceholder: "Digite seu Cupom", couponButton: "inserir ✓",
+    secureTitle: "Transação segura e confirmada na hora",
+    secureText: "O pagamento com Pix leva poucos segundos usando a tecnologia do Banco Central para garantir a proteção dos seus dados em uma transação segura. Copie o código ou leia o QR Code para pagar",
+    detailsTitle: "Detalhes da Compra", finishButton: "Finalizar Pedido ✓", waitText: "Aguardando validação do seu dispositivo...",
+    safeNote: "Ambiente totalmente **seguro** e **protegido** contra fraudes.",
+    legal: "Ao clicar em **Finalizar Pedido**, eu concordo (i) que estou de acordo com os **Termos de Compra**; (ii) que li e estou ciente da **Política de Privacidade**; (iii) que concordo com os **Termos de Uso**; e (iv) que sou maior de idade ou autorizado e acompanhado por um tutor legal.",
+    pixExpires: "Este Pix expira em", pixExpired: "Pix expirado", pixScan: "Escaneie o QR Code com o app do seu banco", pixOr: "Ou use o Pix Copia e Cola",
+    pixCopy: "Copiar código Pix", pixCopied: "Código copiado ✓", pixWaiting: "Aguardando a confirmação do pagamento…", pixNew: "Gerar novo Pix",
+    pixSteps: ["Abra o app do seu banco e vá em **Pix**.", "Escolha **Pix Copia e Cola** ou **Ler QR Code**.", "Confira o valor e confirme o pagamento."],
+    paidTitle: "Pagamento confirmado!", paidText: "Enviaremos o acesso para {email}.", paidButton: "Fechar",
+  },
+  thanks: { title: "Obrigado!", text: "Assim que o Pix for confirmado, enviaremos o acesso para o seu e-mail.", button: "Voltar ao início", link: "/" },
+  coupons: { limitReais: 500, autoPercent: 20, list: [{ code: "OBA2027", percent: 20, on: true }] },
 };
 
 export type Content = typeof DEFAULT_CONTENT;
