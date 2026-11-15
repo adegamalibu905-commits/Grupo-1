@@ -65,12 +65,17 @@ export const CATEGORIES: Category[] = [
       { id: "google", icon: "🔎", title: "Título e descrição (Google)", where: "Na aba do navegador e no resultado de busca do Google (não aparece dentro da página).", roots: ["settings"], kw: "google seo titulo descricao aba busca",
         fields: [T("settings.metaTitle", "Título da aba", "É o texto que aparece na aba do navegador e como título azul no Google.", "Ex.: Mentoria PMMG | Soldado e Cadete"),
           A("settings.metaDescription", "Descrição para o Google", "Uma ou duas frases explicando o site. Aparece abaixo do título no Google.", 3)] },
-      { id: "whatsapp", icon: "💬", title: "WhatsApp", where: "No botão verde que fica flutuando no canto da tela e no cartão que aparece junto dele.", sec: "wa", roots: ["settings"], kw: "whatsapp zap contato telefone atendimento botão",
+      { id: "whatsapp", icon: "💬", title: "WhatsApp", where: "No botão que fica flutuando no canto da tela (abre o menu de redes sociais e WhatsApp) e no cartão que aparece junto dele.", sec: "wa", roots: ["settings"], kw: "whatsapp zap contato telefone atendimento botão facebook instagram tiktok redes sociais perfil link",
         fields: [
           G("Número e mensagem", [
             T("settings.whatsapp", "Número do WhatsApp", "Só números, com 55 + DDD + número. Exemplo: 5531999999999", "5531999999999"),
             A("settings.whatsappText", "Mensagem que já vem escrita", "É o texto que aparece pronto na conversa quando o cliente clica.", 2),
           ]),
+          G("Redes sociais (menu que abre ao clicar no botão)", [
+            T("settings.facebook", "Link do perfil do Facebook", "Cole o link completo do perfil. Se ficar vazio, o Facebook não aparece no menu.", "https://facebook.com/seuperfil"),
+            T("settings.instagram", "Link do perfil do Instagram", "Cole o link completo do perfil. Se ficar vazio, o Instagram não aparece no menu.", "https://instagram.com/seuperfil"),
+            T("settings.tiktok", "Link do perfil do TikTok", "Cole o link completo do perfil. Se ficar vazio, o TikTok não aparece no menu.", "https://tiktok.com/@seuperfil"),
+          ], "Ao clicar no botão flutuante abre uma coluna: Facebook, Instagram, TikTok e, por último, o WhatsApp (que usa o número acima)."),
           G("Cartão que aparece ao lado do botão", [
             T("settings.waLabel", "Rótulo pequeno (em cima)", undefined, "ATENDIMENTO"),
             T("settings.waTitle", "Título"),
