@@ -14,6 +14,7 @@ export const DEFAULT_CONTENT = {
     metaDescription: "A mentoria que mais aprova na PMMG. Pagamento por Pix com confirmação automática.",
     whatsapp: "5500000000000", whatsappText: "Olá! Tenho uma dúvida sobre a mentoria.",
     waLabel: "ATENDIMENTO", waTitle: "Fale com nossa equipe", waText: "Tire suas dúvidas pelo WhatsApp", waCta: "Iniciar conversa →",
+    facebook: "", instagram: "", tiktok: "",
     proof: "Atestado por 2.000+ alunos aprovados", guarantee: "7 dias de garantia legal",
     footerOwner: "Otávio Souza – PMMinas", footerText: "Todos os direitos reservados.", footerSub: "",
   },
